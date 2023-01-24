@@ -37,23 +37,25 @@ class Test_DcMtr:
 
     def up(self, key_sym):
         self.speed += 5
-        self.__log.debug('spped=%s', self.speed)
+        self.__log.info('spped=%s', self.speed)
         self.dc_mtr.set_speed(self.speed)
 
     def down(self, key_sym):
         self.speed -= 5
-        self.__log.debug('spped=%s', self.speed)
+        self.__log.info('spped=%s', self.speed)
         self.dc_mtr.set_speed(self.speed)
 
     def set_stop(self, key_sym):
         self.speed = 0
-        self.__log.debug('spped=%s', self.speed)
+        self.__log.info('spped=%s', self.speed)
         self.dc_mtr.set_speed(self.speed)
 
     def set_break(self, key_sym):
-        self.set_stop(key_sym)
+        self.__log.info('')
         self.dc_mtr.set_break()
+        self.set_stop(key_sym)
 
     def quit(self, key_sym):
+        self.__log.info('')
         self.set_break(key_sym)
         self.cui.end()
