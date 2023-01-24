@@ -1,2 +1,0 @@
-[console_scripts]
-dc_mtr = dc_mtr.__main__:cli
