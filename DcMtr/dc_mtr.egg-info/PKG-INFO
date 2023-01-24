@@ -1,0 +1,31 @@
+Metadata-Version: 2.1
+Name: dc-mtr
+Version: 0.0.1
+Summary: dc_mtr: DC Motor
+Home-page: https://github.com/ytani01/RobotTank1.git
+Author: Yoichi Tanibayashi
+Author-email: yoichi@tanibayashi.jp
+License: MIT
+Classifier: Development Status :: 1 - Planning
+Classifier: Programming Language :: Python
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3
+
+# DC Motor
+
+DC Motor package
+
+## 
+
+```
+DcMtr/
+  +- README.md
+  +- setup.py
+  +- setup.cfg
+  +- entry_points.cfg
+  +- dc_mtr/
+      +- __init__.py
+      +- __main__.py
+      +- dc_mtr.py
+```
