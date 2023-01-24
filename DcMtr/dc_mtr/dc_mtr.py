@@ -4,17 +4,27 @@
 #
 import pigpio
 import time
+from .my_logger import get_logger
+
 
 class DcMtr:
+    """ DcMtr """
+
     PWM_FREQ = 50
     PWM_RANGE = 100
 
-    def __init__(self, pi, pin):
+    def __init__(self, pi, pin, debug=False):
+        self.dbg = debug
+        self.__log = get_logger(__class__.__name__, self.dbg)
         self.pi = pi
         self.pin = pin
+        self.__log.debug('pin=%s', pin)
+
         self.n = len(pin)
         self.pwm_freq = list(range(self.n))
         self.pwm_range = list(range(self.n))
+        self.__log.debug('n=%s, pwm_freq=%s, pwm_range=%s',
+                         self.n, self.pwm_freq, self.pwm_range)
 
         for i in range(self.n):
             pi.set_mode(pin[i], pigpio.OUTPUT)
@@ -56,14 +66,18 @@ class DcMtr:
         self.set(0,0)
         time.sleep(sec)
 
+
 class DcMtrN:
-    def __init__(self, pi, pin):
+    """ DcMtrN """
+    def __init__(self, pi, pin, debug=False):
+        self.dbg = debug
+        self.__log = get_logger(__class__.__name__, self.dbg)
         self.pi = pi
         self.n = len(pin)
         self.dc_mtr = list(range(self.n))
 
         for i in range(self.n):
-            self.dc_mtr[i] = DcMtr(self.pi, pin[i])
+            self.dc_mtr[i] = DcMtr(self.pi, pin[i], debug)
 
     def set_speed(self, speed, sec=0):
         for i in range(self.n):
@@ -79,32 +93,3 @@ class DcMtrN:
         for i in range(self.n):
             self.dc_mtr[i].set_stop()
         time.sleep(sec)
-
-
-#####
-def main1(pi):
-    pin = [[13,12],[17,18]]
-
-    dc_mtr = DcMtrN(pi, pin)
-    print(dc_mtr.n)
-    for i in range(dc_mtr.n):
-        print(dc_mtr.dc_mtr[i].pwm_freq)
-        print(dc_mtr.dc_mtr[i].pwm_range)
-
-    try:
-        dc_mtr.set_speed([100,30],1)
-        dc_mtr.set_break(0.3)
-        dc_mtr.set_speed([-30,-100],1)
-        dc_mtr.set_break(0.3)
-    finally:
-        print('dc_mtr.set_stop()')
-        dc_mtr.set_stop()
-
-
-if __name__ == '__main__':
-    pi = pigpio.pi()
-    try:
-        main1(pi)
-    finally:
-        print('pi.stop()')
-        pi.stop()

@@ -1,6 +1,9 @@
 RCS/
+
 __pycache__/
 .mypy_cache
+
+build/
 
 *.pyc
 
