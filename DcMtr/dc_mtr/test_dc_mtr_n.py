@@ -11,6 +11,12 @@ from . import DcMtrN
 class Test_DcMtrN:
     """ Test DcMtrN class """
 
+    DEF_STD_SPEED = [60, 60]
+    D_V = 20
+    ADJ_V = 5
+    ROT_RATIO = 0.7
+    CURV_RATIO = 0.4
+
     def __init__(self, pi, pin, debug):
         self.dbg = debug
         self.__log = get_logger(__class__.__name__, debug)
@@ -21,6 +27,7 @@ class Test_DcMtrN:
         self.dc_mtr_n = DcMtrN(self.pi, pin, self.dbg)
         self.cui = cuilib.Cui()
 
+        self.std_speed = __class__.DEF_STD_SPEED
         self.speed = [0, 0]
 
     def main(self):
@@ -46,43 +53,51 @@ class Test_DcMtrN:
         self.cui.join()
 
     def set_speed(self):
-        self.__log.info('spped=%s', self.speed)
-        self.dc_mtr_n.set_speed(self.speed)
+        self.speed = self.dc_mtr_n.set_speed(self.speed)
+        self.__log.info('speed=%s', self.speed)
 
     def forward(self, key_sym):
-        self.speed[0] += 5;
-        self.speed[1] += 5;
+        self.speed = self.std_speed
         self.set_speed()
 
     def backward(self, key_sym):
-        self.speed[0] -= 5;
-        self.speed[1] -= 5;
+        self.speed = [-s for s in self.std_speed]
         self.set_speed()
 
     def l_up(self, key_sym):
-        self.speed[0] += 5
-        self.set_speed()
+        self.std_speed[0] += self.ADJ_V
+        self.forward(key_sym)
 
     def r_up(self, key_sym):
-        self.speed[1] += 5
-        self.set_speed()
+        self.std_speed[1] += self.ADJ_V
+        self.forward(key_sym)
 
     def l_down(self, key_sym):
-        self.speed[0] -= 5
-        self.set_speed()
+        self.std_speed[0] -= self.ADJ_V
+        self.forward(key_sym)
 
     def r_down(self, key_sym):
-        self.speed[1] -= 5
-        self.set_speed()
+        self.std_speed[1] -= self.ADJ_V
+        self.forward(key_sym)
 
     def l_rot(self, key_sym):
-        self.speed[0] -= 5
-        self.speed[1] += 5
+        if ( self.speed == [0, 0] ):
+            self.speed[0] = -self.std_speed[0] * self.ROT_RATIO
+            self.speed[1] = self.std_speed[1] * self.ROT_RATIO
+        else:
+            self.speed[0] = self.std_speed[0] * self.CURV_RATIO
+            self.speed[1] = self.std_speed[1]
+
         self.set_speed()
 
     def r_rot(self, key_sym):
-        self.speed[0] += 5
-        self.speed[1] -= 5
+        if ( self.speed == [0, 0] ):
+            self.speed[0] = self.std_speed[1] * self.ROT_RATIO
+            self.speed[1] = -self.std_speed[1] * self.ROT_RATIO
+        else:
+            self.speed[0] = self.std_speed[1]
+            self.speed[1] = self.std_speed[1] * self.CURV_RATIO
+
         self.set_speed()
 
     def set_stop(self, key_sym):

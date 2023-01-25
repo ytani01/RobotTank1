@@ -46,10 +46,9 @@ class DcMtr:
         self.pi.set_PWM_dutycycle(self.pin[1], in2)
 
     def set_speed(self, speed, sec=0):
-        if speed < -DcMtr.PWM_RANGE:
-            speed = -DcMtr.PWM_RANGE
-        if speed > DcMtr.PWM_RANGE:
-            speed = DcMtr.PWM_RANGE
+        # -DcMtr.PWM_RANGE <= speed <= DcMtr.PWM_RANGE
+        speed = max(speed, -DcMtr.PWM_RANGE)
+        speed = min(speed, DcMtr.PWM_RANGE)
 
         if speed >= 0:
             self.set(speed, 0)
@@ -57,6 +56,8 @@ class DcMtr:
             self.set(0, -speed)
 
         time.sleep(sec)
+
+        return speed
 
     def set_break(self, sec=0):
         self.set(DcMtr.PWM_RANGE,DcMtr.PWM_RANGE)
@@ -80,9 +81,15 @@ class DcMtrN:
             self.dc_mtr[i] = DcMtr(self.pi, pin[i], debug)
 
     def set_speed(self, speed, sec=0):
+        ret_speed = []
+
         for i in range(self.n):
-            self.dc_mtr[i].set_speed(speed[i])
+            ret_speed.append(self.dc_mtr[i].set_speed(speed[i]))
+        self.__log.debug("ret_speed=%s", ret_speed)
+
         time.sleep(sec)
+
+        return ret_speed
 
     def set_break(self, sec=0):
         for i in range(self.n):
