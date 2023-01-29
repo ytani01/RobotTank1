@@ -4,18 +4,6 @@ Robot Tank Package
 
 ## 
 
-```
- RobotTank1/
-  +- README.md
-  +- setup.py
-  +- setup.cfg
-  +- entry_points.cfg
-  +- install.sh
-  +- robottank/
-      +- __init__.py
-      +- __main__.py
-      +- dc_mtr.py
-
 
 ## Reference
 
