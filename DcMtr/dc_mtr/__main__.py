@@ -4,9 +4,9 @@
 import click
 import pigpio
 from . import __prog_name__, __version__, __author__
-from .my_logger import get_logger
-from .test_dc_mtr import Test_DcMtr
-from .test_dc_mtr_n import Test_DcMtrN
+from . import get_logger
+from . import Test_DcMtr
+from . import Test_DcMtrN
 
 
 @click.group(invoke_without_command=True,

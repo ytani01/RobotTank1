@@ -2,7 +2,6 @@
 #
 # -*- coding: utf-8 -*-
 #
-import pigpio
 import cuilib
 from .my_logger import get_logger
 from . import DcMtr
