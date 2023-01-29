@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# Copyright (c) 2023 Yoichi Tanibayashi
+#
 # -*- coding: utf-8 -*-
 #
 import cuilib
@@ -18,7 +20,7 @@ class Test_DcMtrN:
 
     def __init__(self, pi, pin, debug):
         self.dbg = debug
-        self.__log = get_logger(__class__.__name__, debug)
+        __class__.__log = get_logger(__class__.__name__, debug)
         self.pi = pi
         self.pin = pin
         self.__log.debug('pin=%s', pin)

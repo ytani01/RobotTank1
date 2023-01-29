@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# Copyright (c) 2023 Yoichi Tanibayashi
+#
 # -*- coding: utf-8 -*-
 #
 from .my_logger import get_logger

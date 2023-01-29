@@ -7,6 +7,7 @@ from . import __prog_name__, __version__, __author__
 from . import get_logger
 from . import Test_DcMtr
 from . import Test_DcMtrN
+from . import Test_DcMtrServer
 
 
 @click.group(invoke_without_command=True,
@@ -69,6 +70,32 @@ def dc_mtr_n(obj, pin1, pin2, pin3, pin4, opt1, debug):
 
     pi = pigpio.pi()
     test_app = Test_DcMtrN(pi, ((pin1, pin2), (pin3, pin4)), obj['debug'] or debug)
+
+    try:
+        test_app.main()
+
+    finally:
+        pi.stop()
+
+
+@cli.command(help="dc_mtr_server")
+@click.argument('pin1', type=int)
+@click.argument('pin2', type=int)
+@click.argument('pin3', type=int)
+@click.argument('pin4', type=int)
+@click.option('--port', '-p', 'port', type=int, default=12345, help='port number')
+@click.option('--debug', '-d', 'debug', is_flag=True, default=False,
+              help='debug flag')
+@click.pass_obj
+def dc_mtr_server(obj, pin1, pin2, pin3, pin4, port, debug):
+    """ DcMtrServer """
+    __log = get_logger(__name__, obj['debug'] or debug)
+    __log.debug('obj=%s, pin=%s, port=%s', obj,
+                (pin1, pin2, pin3, pin4), port)
+
+    pi = pigpio.pi()
+    test_app = Test_DcMtrServer(pi, ((pin1, pin2), (pin3, pin4)), port,
+        obj['debug'] or debug)
 
     try:
         test_app.main()

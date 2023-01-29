@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# Copyright (c) 2023 Yoichi Tanibayashi
+#
 # -*- coding: utf-8 -*-
 #
 import cuilib
@@ -11,13 +13,13 @@ class Test_DcMtr:
     """ Test DcMtr class """
 
     def __init__(self, pi, pin, debug):
-        self.dbg = debug
-        self.__log = get_logger(__class__.__name__, debug)
+        self._dbg = debug
+        __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.pi = pi
         self.pin = pin
         self.__log.debug('pin=%s', pin)
 
-        self.dc_mtr = DcMtr(self.pi, pin, self.dbg)
+        self.dc_mtr = DcMtr(self.pi, pin, self._dbg)
         self.cui = cuilib.Cui()
 
         self.speed = 0
