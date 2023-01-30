@@ -12,10 +12,11 @@ DC Motor package
        | TCP/IP
        v
  ------------------------------------------
-| DcMtrServer     |         -------------  |
-|    DcMtrHandler | -----> | DcMtrWorker | |
-|                 |  cmdq  |  (thread)   | |
-|-----------------         |-------------| |
+| DcMtrServer     |                        |
+|-----------------|         -------------  |
+|  | DcMtrHandler | -----> | DcMtrWorker | |
+|   --------------   cmdq  |  (thread)   | |
+|                          |-------------| |
 |                          |   DcMtrN    | |
 |                          |-------------| |
 |                          |   DcMtr     | |
