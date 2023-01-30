@@ -21,7 +21,7 @@ class Test_DcMtrServer:
             self._pi, self._pin, self._port, debug=self._dbg)
 
     def main(self):
-        self.__log.debug('start server')
+        self.__log.info('start server')
 
         try:
             self._svr.serve_forever()
@@ -30,5 +30,8 @@ class Test_DcMtrServer:
             self.__log.error('  %s:%s', type(e).__name__, e)
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
+        except KeyboardInterrupt as e:
+            self.__log.info('%s:%s', type(e).__name__, e)
+            pass
 
         self.__log.debug('done')

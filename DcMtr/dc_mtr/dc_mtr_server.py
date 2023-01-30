@@ -15,14 +15,15 @@ from . import DcMtrN
 class DcMtrWorker(threading.Thread):
     """ worker thread """
 
-    def __init__(self, pi, mtr, debug=False):
+    def __init__(self, pi, mtr, svr, debug=False):
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.__log.debug('')
 
         self._mtr = mtr
+        self._svr = svr
 
-        self.active =False
+        self.active = False
         self.cmdq = queue.Queue()
 
         super().__init__(daemon=True)
@@ -55,20 +56,31 @@ class DcMtrWorker(threading.Thread):
             cmd = self.recv()
             self.__log.debug('cmd=%s', cmd)
 
+            if len(cmd) == 0:
+                break
+
             try:
-                if cmd[0] == "speed":
+                if cmd[0] in ["speed", "v", "V"]:
+                    if len(cmd) != 3:
+                        self.__log.warning("%s .. ignored", cmd)
+                        continue
+
                     self._mtr.set_speed((int(cmd[1]), int(cmd[2])))
                     continue
 
-                if cmd[0] == "stop":
+                if cmd[0] in ["stop", "s", "S"]:
                     self._mtr.set_stop()
                     continue
 
-                if cmd[0] == "break":
+                if cmd[0] in ["break", "b", "B"]:
                     self._mtr.set_break()
                     continue
 
-                if cmd[0] == "delay":
+                if cmd[0] in ["delay", "sleep", "t", "T"]:
+                    if len(cmd) != 2:
+                        self.__log.warning("%s .. ignore", cmd)
+                        continue
+
                     self.__log.info('delay: %s sec', cmd[1])
                     time.sleep(float(cmd[1]))
                     self.__log.info('delay: %s sec: done', cmd[1])
@@ -104,7 +116,7 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
 
         try:
             self.wfile.write(msg)
-        except BronkenPipeError as e:
+        except BrokenPipeError as e:
             self.__log.debug('%s:%s', type(e).__name__, e)
         except Exception as e:
             self.__log.warning('%s:%s', type(e).__name__, e)
@@ -136,15 +148,20 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
                 self.__log.debug('decoded_data:%a', decoded_data)
 
             # remove white spaces and split
-            data = decoded_data.split()
-            self.__log.debug('data=%a', data)
+            cmd = decoded_data.split()
+            self.__log.info('cmd=%s', cmd)
 
-            if len(data) == 0:
+            if len(cmd) == 0:
                 msg = 'No data .. disconnect'
                 self.__log.warning(msg)
                 break
 
-            self._svr._mtr_worker.send(data)
+            if cmd[0] in ["shutdown"]:
+                self._svr._mtr_worker.send([])
+                self._svr.shutdown()
+                break
+
+            self._svr._mtr_worker.send(cmd)
 
         self.__log.info('done')
 
@@ -165,7 +182,8 @@ class DcMtrServer(socketserver.ThreadingTCPServer):
         self._port = port
 
         self._mtr = DcMtrN(self._pi, self._pin, self._dbg)
-        self._mtr_worker = DcMtrWorker(self._pi, self._mtr, self._dbg)
+
+        self._mtr_worker = DcMtrWorker(self._pi, self._mtr, self, self._dbg)
         self._mtr_worker.start()
 
         try:

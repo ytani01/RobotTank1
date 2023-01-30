@@ -8,6 +8,7 @@ from . import get_logger
 from . import Test_DcMtr
 from . import Test_DcMtrN
 from . import Test_DcMtrServer
+from . import Test_DcMtrClient
 
 
 @click.group(invoke_without_command=True,
@@ -98,10 +99,37 @@ def dc_mtr_server(obj, pin1, pin2, pin3, pin4, port, debug):
         obj['debug'] or debug)
 
     try:
+        __log.info("start")
         test_app.main()
 
     finally:
+        __log.info("end")
         pi.stop()
+
+
+@cli.command(help="dc_mtr_client")
+@click.argument('cmdline', type=str, nargs=-1)
+@click.option('--svr_host', '-s', 'svr_host', type=str, default='localhost',
+              help='server hostname')
+@click.option('--svr_port', '-p', 'svr_port', type=int, default=12345,
+              help='server port number')
+@click.option('--debug', '-d', 'debug', is_flag=True, default=False,
+              help='debug flag')
+@click.pass_obj
+def dc_mtr_client(obj, cmdline, svr_host, svr_port, debug):
+    """ DcMtrClient """
+    __log = get_logger(__name__, obj['debug'] or debug)
+    __log.debug('obj=%s, cmdline=%s, svr_host=%s, svr_port=%s',
+                obj, cmdline, svr_host, svr_port)
+
+    test_app = Test_DcMtrClient(svr_host, svr_port,
+        ' '.join(cmdline), obj['debug'] or debug)
+
+    try:
+        test_app.main()
+
+    finally:
+        __log.info('end')
 
 
 #cli.add_command(cmd2)
