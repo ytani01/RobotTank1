@@ -10,14 +10,14 @@ from .dc_mtr_n import DcMtrN
 from .dc_mtr_server import DcMtrServer
 from .dc_mtr_client import DcMtrClient
 
-from .test_dc_mtr import Test_DcMtr
-from .test_dc_mtr_n import Test_DcMtrN
-from .test_dc_mtr_server import Test_DcMtrServer
-from .test_dc_mtr_client import Test_DcMtrClient
+from .test_dc_mtr import dc_mtr
+from .test_dc_mtr_n import dc_mtr_n
+from .test_dc_mtr_server import dc_mtr_server
+from .test_dc_mtr_client import dc_mtr_client
 
 from .my_logger import get_logger
 
 all = [__prog_name__, __version__, __author__,
        'DcMtr', 'DcMtrN', 'DcMtrServer', 'DcMtrClient',
-       'Test_DcMtr', 'Test_DcMtrN', 'Test_DcMtrServer', 'Test_DcMtrClient',
+       'dc_mtr', 'dc_mtr_n', 'dc_mtr_svr', 'dc_mtr_client',
        'get_logger']

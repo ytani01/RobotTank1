@@ -4,6 +4,8 @@
 #
 # -*- coding: utf-8 -*-
 #
+import pigpio
+import click
 from .my_logger import get_logger
 from . import DcMtrServer
 
@@ -35,3 +37,31 @@ class Test_DcMtrServer:
             pass
 
         self.__log.debug('done')
+
+
+@click.command(help="dc_mtr_server")
+@click.argument('pin1', type=int)
+@click.argument('pin2', type=int)
+@click.argument('pin3', type=int)
+@click.argument('pin4', type=int)
+@click.option('--port', '-p', 'port', type=int, default=12345, help='port number')
+@click.option('--debug', '-d', 'debug', is_flag=True, default=False,
+              help='debug flag')
+@click.pass_obj
+def dc_mtr_server(obj, pin1, pin2, pin3, pin4, port, debug):
+    """ dc_mtr_server """
+    __log = get_logger(__name__, obj['debug'] or debug)
+    __log.debug('obj=%s, pin=%s, port=%s', obj,
+                (pin1, pin2, pin3, pin4), port)
+
+    pi = pigpio.pi()
+    test_app = Test_DcMtrServer(pi, ((pin1, pin2), (pin3, pin4)), port,
+        obj['debug'] or debug)
+
+    try:
+        __log.info("start")
+        test_app.main()
+
+    finally:
+        __log.info("end")
+        pi.stop()

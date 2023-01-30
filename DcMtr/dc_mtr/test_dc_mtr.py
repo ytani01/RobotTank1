@@ -4,6 +4,8 @@
 #
 # -*- coding: utf-8 -*-
 #
+import pigpio
+import click
 import cuilib
 from .my_logger import get_logger
 from . import DcMtr
@@ -60,3 +62,25 @@ class Test_DcMtr:
         self.__log.info('')
         self.set_break(key_sym)
         self.cui.end()
+
+
+@click.command(help="dc_mtr")
+@click.argument('pin1', type=int)
+@click.argument('pin2', type=int)
+@click.option('--opt1', '-o1', 'opt1', type=str, default=None, help='opt')
+@click.option('--debug', '-d', 'debug', is_flag=True, default=False,
+              help='debug flag')
+@click.pass_obj
+def dc_mtr(obj, pin1, pin2, opt1, debug):
+    """ dc_mtr """
+    __log = get_logger(__name__, obj['debug'] or debug)
+    __log.debug('obj=%s, opt1=%s, args=%s', obj, opt1, (pin1, pin2))
+
+    pi = pigpio.pi()
+    test_app = Test_DcMtr(pi, (pin1, pin2), obj['debug'] or debug)
+
+    try:
+        test_app.main()
+
+    finally:
+        pi.stop()
