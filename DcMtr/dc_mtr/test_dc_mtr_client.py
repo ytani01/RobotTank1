@@ -89,6 +89,8 @@ class Test_DcMtrClient:
     def cmd_break(self, key_sym):
         self.__log.debug('')
         self._clnt.send_cmdline('break')
+        time.sleep(0.5)
+        self.cmd_stop(key_sym)
 
 
 @click.command(help="dc_mtr_client")
