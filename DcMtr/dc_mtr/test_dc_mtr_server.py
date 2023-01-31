@@ -34,7 +34,6 @@ class Test_DcMtrServer:
             self.__log.error('%s:%s', type(e).__name__, e)
         except KeyboardInterrupt as e:
             self.__log.info('%s:%s', type(e).__name__, e)
-            pass
 
         self.__log.debug('done')
 
@@ -55,8 +54,8 @@ def dc_mtr_server(obj, pin1, pin2, pin3, pin4, port, debug):
                 (pin1, pin2, pin3, pin4), port)
 
     pi = pigpio.pi()
-    test_app = Test_DcMtrServer(pi, ((pin1, pin2), (pin3, pin4)), port,
-        obj['debug'] or debug)
+    test_app = Test_DcMtrServer(
+        pi, ((pin1, pin2), (pin3, pin4)), port, obj['debug'] or debug)
 
     try:
         __log.info("start")

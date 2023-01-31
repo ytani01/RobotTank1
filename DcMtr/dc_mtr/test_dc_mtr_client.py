@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 #
 import click
-import sys
+import time
 import cuilib
 from .my_logger import get_logger
 from . import DcMtrClient
@@ -64,15 +64,23 @@ class Test_DcMtrClient:
         self.cui.end()
 
     def cmd_forward(self, key_sym):
+        self.cmd_stop(key_sym)
+        time.sleep(0.2)
         self.set_speed([self.DEF_SPEED, self.DEF_SPEED])
 
     def cmd_backward(self, key_sym):
+        self.cmd_stop(key_sym)
+        time.sleep(0.2)
         self.set_speed([-self.DEF_SPEED, -self.DEF_SPEED])
 
     def cmd_left(self, key_sym):
+        self.cmd_stop(key_sym)
+        time.sleep(0.2)
         self.set_speed([-self.DEF_SPEED, self.DEF_SPEED])
 
     def cmd_right(self, key_sym):
+        self.cmd_stop(key_sym)
+        time.sleep(0.2)
         self.set_speed([self.DEF_SPEED, -self.DEF_SPEED])
 
     def cmd_stop(self, key_sym):

@@ -11,7 +11,8 @@ from .my_logger import get_logger
 
 
 class DcMtrClient:
-    """ DcMtrClient """
+    """ DcMtrClient
+    """
     DEF_HOST = 'localhost'
     DEF_PORT = 12345
 
