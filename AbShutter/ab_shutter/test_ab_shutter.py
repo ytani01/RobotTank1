@@ -23,9 +23,7 @@ class Test_AbShutter:
 
         self._obj = []
         for d in self._devs:
-            # create 'AbShutter' object and start it
-            o = AbShutter(d, self.cb_func, debug=self._dbg)
-            self._obj.append(o)
+            self._obj.append(AbShutter(d, self.cb_func, debug=self._dbg))
 
     def main(self):
         self.__log.debug('')
