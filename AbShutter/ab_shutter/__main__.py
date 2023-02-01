@@ -5,6 +5,7 @@ import click
 from . import __prog_name__, __version__, __author__
 from . import get_logger
 from . import ab_shutter
+from . import dc_mtr
 
 
 @click.group(invoke_without_command=True,
@@ -30,6 +31,7 @@ def cli(ctx, opt0, debug):
 
 
 cli.add_command(ab_shutter)
+cli.add_command(dc_mtr)
 
 
 if __name__ == '__main__':

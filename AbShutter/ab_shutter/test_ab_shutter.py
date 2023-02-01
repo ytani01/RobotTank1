@@ -6,7 +6,6 @@
 #
 import click
 import time
-import cuilib
 from .my_logger import get_logger
 from . import AbShutter
 
