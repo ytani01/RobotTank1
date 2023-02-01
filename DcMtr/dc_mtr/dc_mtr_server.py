@@ -5,21 +5,111 @@
 # -*- coding: utf-8 -*-
 #
 import socketserver
+import threading
+import queue
+import time
 from .my_logger import get_logger
 from . import DcMtrN
 
 
+CMD = {
+    'SPEED': ['speed', 'v', 'V'],
+    'STOP': ['stop', 's', 'S'],
+    'BREAK': ['break', 'b', 'B' ' '],
+    'DELAY': ['delay', 'sleep', 't', 'T'],
+    'NULL': ['null']
+}
+
+
+class DcMtrWorker(threading.Thread):
+    """ worker thread """
+
+    def __init__(self, pi, mtr, svr, debug=False):
+        self._dbg = debug
+        __class__.__log = get_logger(__class__.__name__, self._dbg)
+        self.__log.debug('')
+
+        self._mtr = mtr
+        self._svr = svr
+
+        self.active = False
+        self.cmdq = queue.Queue()
+
+        super().__init__(daemon=True)
+
+    def end(self):
+        self.__log.debug('')
+
+        self.join()
+
+        self._log.debug('done')
+
+    def send(self, cmd, doInterrupt=True):
+        """
+        cmd: "<cmd_name> <params>.."
+        """
+        self.__log.debug('cmd=%s', cmd)
+        self.cmdq.put(cmd)
+
+    def recv(self):
+        self.__log.debug('')
+        cmd = self.cmdq.get()
+        self.__log.debug('cmd=%s', cmd)
+        return cmd
+
+    def run(self):
+        self.__log.debug('')
+
+        self.active = True
+        while self.active:
+            cmd = self.recv()
+            self.__log.debug('cmd=%s', cmd)
+
+            if len(cmd) == 0:
+                break
+
+            try:
+                if cmd[0] in CMD['SPEED']:
+                    if len(cmd) != 3:
+                        self.__log.warning("%s .. ignored", cmd)
+                        continue
+
+                    self._mtr.set_speed((int(cmd[1]), int(cmd[2])))
+                    continue
+
+                if cmd[0] in CMD['STOP']:
+                    self._mtr.set_stop()
+                    continue
+
+                if cmd[0] in CMD['BREAK']:
+                    self._mtr.set_break()
+                    continue
+
+                if cmd[0] in CMD['DELAY']:
+                    # XXX to be update
+                    if len(cmd) != 2:
+                        self.__log.warning("%s .. ignore", cmd)
+                        continue
+
+                    self.__log.info('delay: %s sec', cmd[1])
+                    time.sleep(float(cmd[1]))
+                    self.__log.info('delay: %s sec: done', cmd[1])
+                    continue
+
+                if cmd[0] in CMD['NULL']:
+                    continue
+
+                self.__log.warning('Invalid cmd: %s', cmd)
+
+            except Exception as e:
+                self._mtr.set_stop()
+                self.__log.warning('%s:%s', type(e).__name__, e)
+
+        self.__log.info('done.')
+
+
 class DcMtrHandler(socketserver.StreamRequestHandler):
-    """ handler
-    """
-
-    CMD = {
-        'speed': ['speed', 'v', 'V'],
-        'stop': ['stop', 's', 'S'],
-        'break': ['break', 'b', 'B'],
-        'null': ['null']
-    }
-
+    """ handler """
     def __init__(self, req, client_addr, svr):
         """ __init__ """
         self._dbg = svr._dbg
@@ -37,13 +127,10 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
         return super().setup()
 
     def net_write(self, msg):
-        self.__log.debug('msg=%a', msg)
-
-        msg_data = msg.encode('utf-8')
-        self.__log.debug('msg_data=%a', msg_data)
+        self.__log.debug('msg=%s.', msg)
 
         try:
-            self.wfile.write(msg_data)
+            self.wfile.write(msg)
         except BrokenPipeError as e:
             self.__log.debug('%s:%s', type(e).__name__, e)
         except Exception as e:
@@ -84,33 +171,9 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
                 self.__log.warning(msg)
                 break
 
-            # exec
-            ret_msg = 'NG %s\n' % (cmd)
-            if cmd[0] in self.CMD['speed']:
-                if len(cmd) == 3:
-                    self._svr._mtr.set_speed((int(cmd[1]), int(cmd[2])))
-                    ret_msg = 'OK %s\n' % (cmd)
-                else:
-                    self.__log.warning("%s .. ignored", cmd)
-                    ret_msg = 'NG %s\n' % (cmd)
-
-            if cmd[0] in self.CMD['stop']:
-                self._svr._mtr.set_stop()
-                ret_msg = 'OK %s\n' % (cmd)
-
-            if cmd[0] in self.CMD['break']:
-                self._svr._mtr.set_break()
-                ret_msg = 'OK %s\n' % (cmd)
-
-            if cmd[0] in self.CMD['null']:
-                ret_msg = 'OK %s\n' % (cmd)
-
-            self.net_write(ret_msg)
+            self._svr._mtr_worker.send(cmd)
 
         self.__log.info('done')
-
-    def finish(self):
-        self.__log.debug('')
 
 
 class DcMtrServer(socketserver.ThreadingTCPServer):
@@ -129,6 +192,9 @@ class DcMtrServer(socketserver.ThreadingTCPServer):
         self._port = port
 
         self._mtr = DcMtrN(self._pi, self._pin, self._dbg)
+
+        self._mtr_worker = DcMtrWorker(self._pi, self._mtr, self, self._dbg)
+        self._mtr_worker.start()
 
         try:
             super().__init__(('', self._port), DcMtrHandler)

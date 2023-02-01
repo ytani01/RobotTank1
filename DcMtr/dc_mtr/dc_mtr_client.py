@@ -84,6 +84,7 @@ class DcMtrClient:
 
         try:
             self.tn.write(cmdline.encode('utf-8'))
+            time.sleep(0.01)
         except Exception as e:
             self.__log.warning('%s:%s.', type(e).__name__, e)
             return ''

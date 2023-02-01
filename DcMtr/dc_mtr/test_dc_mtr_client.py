@@ -5,7 +5,6 @@
 # -*- coding: utf-8 -*-
 #
 import click
-import time
 import cuilib
 from .my_logger import get_logger
 from . import DcMtrClient
@@ -15,6 +14,9 @@ class Test_DcMtrClient:
     """ Test_DcMtrClient """
 
     DEF_SPEED = 60
+    D_SPEED = 5
+    STOP_DELAY = 0.1
+    BREAK_DELAY = 0.5
 
     def __init__(self, svr_host, svr_port, cmdline='', debug=False):
         self._dbg = debug
@@ -40,6 +42,10 @@ class Test_DcMtrClient:
         self.cui.add('x', self.cmd_backward, 'Backward')
         self.cui.add('a', self.cmd_left, 'Left')
         self.cui.add('d', self.cmd_right, 'Right')
+        self.cui.add('q', self.cmd_l_up, 'L_UP')
+        self.cui.add('z', self.cmd_l_down, 'L_DOWN')
+        self.cui.add('e', self.cmd_r_up, 'R_UP')
+        self.cui.add('c', self.cmd_r_down, 'R_DOWN')
 
     def main(self):
         self.__log.debug('')
@@ -55,7 +61,11 @@ class Test_DcMtrClient:
         self.__log.debug('speed=%s', speed)
         self.speed = speed
         cmdline = 'speed %s %s' % tuple(self.speed)
-        self.__log.debug('cmdline=%s', cmdline)
+        self._clnt.send_cmdline(cmdline)
+
+    def set_delay(self, delay_sec):
+        self.__log.debug('delay_sec=%s', delay_sec)
+        cmdline = 'delay %s' % (delay_sec)
         self._clnt.send_cmdline(cmdline)
 
     def cmd_quit(self, key_sym):
@@ -64,23 +74,23 @@ class Test_DcMtrClient:
         self.cui.end()
 
     def cmd_forward(self, key_sym):
-        self.cmd_stop(key_sym)
-        time.sleep(0.2)
+        self.set_speed([0, 0])
+        self.set_delay(self.STOP_DELAY)
         self.set_speed([self.DEF_SPEED, self.DEF_SPEED])
 
     def cmd_backward(self, key_sym):
-        self.cmd_stop(key_sym)
-        time.sleep(0.2)
+        self.set_speed([0, 0])
+        self.set_delay(self.STOP_DELAY)
         self.set_speed([-self.DEF_SPEED, -self.DEF_SPEED])
 
     def cmd_left(self, key_sym):
-        self.cmd_stop(key_sym)
-        time.sleep(0.2)
+        self.set_speed([0, 0])
+        self.set_delay(self.STOP_DELAY)
         self.set_speed([-self.DEF_SPEED, self.DEF_SPEED])
 
     def cmd_right(self, key_sym):
-        self.cmd_stop(key_sym)
-        time.sleep(0.2)
+        self.set_speed([0, 0])
+        self.set_delay(self.STOP_DELAY)
         self.set_speed([self.DEF_SPEED, -self.DEF_SPEED])
 
     def cmd_stop(self, key_sym):
@@ -89,8 +99,28 @@ class Test_DcMtrClient:
     def cmd_break(self, key_sym):
         self.__log.debug('')
         self._clnt.send_cmdline('break')
-        time.sleep(0.5)
+        self.set_delay(self.BREAK_DELAY)
         self.cmd_stop(key_sym)
+
+    def cmd_l_up(self, key_sym):
+        self.__log.debug('')
+        self.speed[0] += self.D_SPEED
+        self.set_speed(self.speed)
+
+    def cmd_l_down(self, key_sym):
+        self.__log.debug('')
+        self.speed[0] -= self.D_SPEED
+        self.set_speed(self.speed)
+
+    def cmd_r_up(self, key_sym):
+        self.__log.debug('')
+        self.speed[1] += self.D_SPEED
+        self.set_speed(self.speed)
+
+    def cmd_r_down(self, key_sym):
+        self.__log.debug('')
+        self.speed[1] -= self.D_SPEED
+        self.set_speed(self.speed)
 
 
 @click.command(help="dc_mtr_client")

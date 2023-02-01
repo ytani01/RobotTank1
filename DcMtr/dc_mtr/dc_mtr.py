@@ -5,7 +5,6 @@
 # -*- coding: utf-8 -*-
 #
 import pigpio
-import time
 from .my_logger import get_logger
 
 
@@ -25,7 +24,7 @@ class DcMtr:
         self._pin_n = len(pin)
         if self._pin_n != 2:
             self.__log.error('pin_n=%s', self._pin_n)
-            
+
         self.speed = 0
 
         self._pwm_freq = list(range(self._pin_n))
