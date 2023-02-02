@@ -12,5 +12,6 @@ echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 cd $WORKDIR
 while true; do
     python3 -m ab_shutter dc-mtr 1 2
+    echo -----
     sleep 2
 done

@@ -51,22 +51,28 @@ class Test_DcMtrClient:
         self.__log.debug('')
 
         if len(self._cmdline) > 0:
-            self._clnt.send_cmdline(self._cmdline)
+            self.send_cmdline(self._cmdline)
             return
 
         self.cui.start()
         self.cui.join()
 
+    def send_cmdline(self, cmdline):
+        try:
+            self._clnt.send_cmdline(cmdline)
+        except Exception as e:
+            self.__log.error('%s:%s', type(e).__name__, e)
+
     def set_speed(self, speed):
         self.__log.debug('speed=%s', speed)
         self.speed = speed
         cmdline = 'speed %s %s' % tuple(self.speed)
-        self._clnt.send_cmdline(cmdline)
+        self.send_cmdline(cmdline)
 
     def set_delay(self, delay_sec):
         self.__log.debug('delay_sec=%s', delay_sec)
         cmdline = 'delay %s' % (delay_sec)
-        self._clnt.send_cmdline(cmdline)
+        self.send_cmdline(cmdline)
 
     def cmd_quit(self, key_sym):
         self.__log.info('')
@@ -98,7 +104,7 @@ class Test_DcMtrClient:
 
     def cmd_break(self, key_sym):
         self.__log.debug('')
-        self._clnt.send_cmdline('break')
+        self.send_cmdline('break')
         self.set_delay(self.BREAK_DELAY)
         self.cmd_stop(key_sym)
 

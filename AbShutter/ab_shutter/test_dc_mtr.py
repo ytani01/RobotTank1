@@ -7,7 +7,7 @@
 import click
 import time
 from enum import Enum, auto
-from dc_mtr import DcMtrClient
+from dcmtr import DcMtrClient
 from .my_logger import get_logger
 from . import AbShutter
 
@@ -43,6 +43,8 @@ class Test_DcMtr:
                 except Exception as e:
                     self.__log.error('%s:%s', type(e).__name__, e)
                     time.sleep(2)
+                else:
+                    self.__log.info('connect: %s', d)
 
             self._obj.append(o)
 

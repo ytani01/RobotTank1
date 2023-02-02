@@ -11,6 +11,6 @@ echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 
 cd $WORKDIR
 while true; do
-    python3 -m dc_mtr dc-mtr-server 17 18 13 12 -p 12345
+    python3 -m dcmtr dc-mtr-server 17 18 13 12 -p 12345
     sleep 2
 done

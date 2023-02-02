@@ -25,19 +25,10 @@ class DcMtrClient:
         self._svr_host = svr_host
         self._svr_port = svr_port
 
-        self.tn = self.open(self._svr_host, self._svr_port)
+        self._tn = None
 
     def __del__(self):
         self.__log.debug('')
-        self.close()
-
-    def open(self, svr_host, svr_port):
-        self.__log.debug('%s:%s', svr_host, svr_port)
-        return telnetlib.Telnet(svr_host, svr_port)
-
-    def close(self):
-        self.__log.debug('')
-        self.tn.close()
 
     def recv_reply(self):
         self.__log('')
@@ -47,7 +38,7 @@ class DcMtrClient:
         while True:
             time.sleep(0.1)
             try:
-                in_data = self.tn.read_eager()
+                in_data = self._tn.read_eager()
             except Exception as e:
                 self.__log.warning('%s:%s', type(e).__name__, e)
                 in_data = b''
@@ -82,11 +73,8 @@ class DcMtrClient:
     def send_cmdline(self, cmdline):
         self.__log.debug('cmdline=%s', cmdline)
 
-        try:
-            self.tn.write(cmdline.encode('utf-8'))
-            time.sleep(0.01)
-        except Exception as e:
-            self.__log.warning('%s:%s.', type(e).__name__, e)
-            return ''
-
+        self._tn = telnetlib.Telnet(self._svr_host, self._svr_port)
+        self._tn.write(cmdline.encode('utf-8'))
+        time.sleep(0.01)
+        self._tn.close()
         return cmdline
