@@ -5,7 +5,7 @@
 # -*- coding: utf-8 -*-
 #
 import evdev
-import os
+import time
 import threading
 from .my_logger import get_logger
 
@@ -19,30 +19,25 @@ class AbShutter(threading.Thread):
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.__log.debug('dev=%d', dev)
 
-        self.dev            = dev
-        self.cb_func        = cb_func
+        self.dev = dev
+        self.cb_func = cb_func
         
         self.input_dev_file = self.DEVFILE_PREFIX + str(self.dev)
-        if not os.path.exists(self.input_dev_file):
-            self.__log.error('no such device: %s', self.input_dev_file)
-            raise Exception('no such device : %s' % self.input_dev_file)
-
         self.__log.debug('input_dev_file=%s', self.input_dev_file)
 
         self.input_dev = evdev.device.InputDevice(self.input_dev_file)
 
         super().__init__(daemon=True)
 
-        
     def wait_key_event(self):
-        self.__log.debug('')
+        self.__log.debug('%s', self.input_dev_file)
         
         for ev in self.input_dev.read_loop():
             self.__log.debug(ev)
             if ev.type == evdev.events.EV_KEY:
                 break
             self.__log.debug('ignore this event')
-            
+
         self.__log.debug('(ev.code, ev.value)=%s', (ev.code, ev.value))
 
         if self.cb_func != None:
@@ -52,8 +47,26 @@ class AbShutter(threading.Thread):
 
     def run(self):
         self.__log.debug('')
+
         while True:
-            (code, value) = self.wait_key_event()
+            try:
+                self.input_dev = evdev.device.InputDevice(self.input_dev_file)
+            except FileNotFoundError as e:
+                self.__log.error('%s:%s', type(e).__name__, e)
+                time.sleep(2)
+                continue
+            except PermissionError as e:
+                self.__log.error('%s:%s', type(e).__name__, e)
+                time.sleep(2)
+                continue
+
+            try:
+                (code, value) = self.wait_key_event()
+            except OSError as e:
+                self.__log.error('%s:%s', type(e).__name__, e)
+                time.sleep(2)
+                continue
+
             self.__log.debug('%s(%d) %s(%d)',
                              __class__.keycode2str(code), code, 
                              __class__.keyval2str(value), value)

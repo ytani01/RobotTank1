@@ -6,13 +6,25 @@
 #
 import click
 import time
+from enum import Enum, auto
 from dc_mtr import DcMtrClient
 from .my_logger import get_logger
 from . import AbShutter
 
 
+class Move(Enum):
+    STOP = auto()
+    FORWARD = auto()
+    BACKWARD = auto()
+    ROTATE_LEFT = auto()
+    ROTATE_RIGHT = auto()
+
+
 class Test_DcMtr:
     """ Test AbShutter class """
+
+    FWD_SPEED = 60
+    ROT_SPEED = 30
 
     def __init__(self, devs, dc_mtr, debug=False):
         self._dbg = debug
@@ -24,49 +36,84 @@ class Test_DcMtr:
 
         self._obj = []
         for d in self._devs:
-            self._obj.append(AbShutter(d, self.cb_func, debug=self._dbg))
+            o = None
+            while o is None:
+                try:
+                    o = AbShutter(d, self.cb_func, debug=self._dbg)
+                except Exception as e:
+                    self.__log.error('%s:%s', type(e).__name__, e)
+                    time.sleep(2)
 
-        self._stop = True;
-        self._rotate = False;
+            self._obj.append(o)
+
+        self._move = Move.STOP
+        self._key_push = False
 
     def main(self):
         self.__log.debug('')
-        
+
         for o in self._obj:
             o.start()
 
         while True:
-            print(time.strftime('%Y/%m/%d(%a) %H:%M:%S'))
+            self.__log.debug(time.strftime('%Y/%m/%d(%a) %H:%M:%S'))
             time.sleep(5)
 
     def cb_func(self, dev, code, value):
         """ callback function """
-        self.__log.debug('dev=%d, code=%d:%s, value=%d:%s', 
+        self.__log.info('dev=%d, code=%d:%s, value=%d:%s',
                          dev,
                          code, AbShutter.keycode2str(code),
                          value, AbShutter.keyval2str(value))
 
+        if self._key_push:
+            if AbShutter.keyval2str(value) not in ['RELEASE']:
+                return
+
+            if AbShutter.keycode2str(code) not in ['KEY_VOLUMEUP']:
+                return
+
+            self._key_push = False
+            return
+
+        # self._key_push == False
+
         if AbShutter.keyval2str(value) in ['RELEASE']:
             return
 
+        self._key_push = True
+
         if AbShutter.keycode2str(code) in ['KEY_ENTER']:
-            self._stop = not self._stop
+            if self._move == Move.STOP:
+                self._move = Move.ROTATE_RIGHT
+            else:
+                self._move = Move.STOP
 
         if AbShutter.keycode2str(code) in ['KEY_VOLUMEUP']:
-            if self._stop:
-                return
+            if self._move == Move.FORWARD:
+                self._move = Move.ROTATE_LEFT
+            else:
+                self._move = Move.FORWARD
 
-            self._rotate = not self._rotate
-
-        if self._stop:
+        # move
+        if self._move == Move.STOP:
             self._dc_mtr.send_cmdline('stop')
-            self._rotate = False
+            self._rotate = True
             return
 
-        if self._rotate:
-            self._dc_mtr.send_cmdline('speed 50 -50')
-        else:
-            self._dc_mtr.send_cmdline('speed 50 50')
+        if self._move == Move.FORWARD:
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self.FWD_SPEED, self.FWD_SPEED))
+            return
+
+        if self._move == Move.ROTATE_LEFT:
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (-self.ROT_SPEED, self.ROT_SPEED))
+            return
+
+        if self._move == Move.ROTATE_RIGHT:
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self.ROT_SPEED, -self.ROT_SPEED))
             return
 
 
