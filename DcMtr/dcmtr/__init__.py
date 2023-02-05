@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Yoichi Tanibayashi
 #
 __prog_name__ = 'dcmtr'
-__version__ = '0.0.1'
+__version__ = '0.1.0'
 __author__ = 'Yoichi Tanibayashi'
 
 from .dc_mtr import DcMtr

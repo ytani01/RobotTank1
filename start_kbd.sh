@@ -3,14 +3,14 @@
 VENVDIR=$HOME/env2-robottank
 BINDIR=$VENVDIR/bin
 TOPDIR=$VENVDIR/RobotTank1
-WORKDIR=$TOPDIR/DcMtr
+WORKDIR=$TOPDIR/BtKbd
 
 cd $WORKDIR
 while true; do
     . $BINDIR/activate
     echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 
-    python3 -m dcmtr dc-mtr-server 17 18 13 12 -p 12345
+    python3 -m btkbd robottank 1 2
 
     deactivate
 

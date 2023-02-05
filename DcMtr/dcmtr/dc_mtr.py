@@ -5,6 +5,7 @@
 # -*- coding: utf-8 -*-
 #
 import pigpio
+import time
 from .my_logger import get_logger
 
 

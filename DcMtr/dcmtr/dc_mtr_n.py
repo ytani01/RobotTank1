@@ -4,6 +4,7 @@
 #
 # -*- coding: utf-8 -*-
 #
+import time
 from .my_logger import get_logger
 from . import DcMtr
 
@@ -26,10 +27,14 @@ class DcMtrN:
     def set_speed(self, speed):
         ret_speed = []
 
+        # 逆起電力対策
+        self.set_stop()
+        time.sleep(0.1)
+
         for i in range(self._mtr_n):
             ret_speed.append(self._dc_mtr[i].set_speed(speed[i]))
-        self.__log.debug("ret_speed=%s", ret_speed)
 
+        self.__log.debug("ret_speed=%s", ret_speed)
         return ret_speed
 
     def set_break(self):

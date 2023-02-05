@@ -8,4 +8,4 @@ $ROBOTDIR/start_server.sh &
 
 sleep 2
 
-$ROBOTDIR/start_ab.sh
+exec $ROBOTDIR/start_kbd.sh
