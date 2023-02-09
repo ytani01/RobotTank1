@@ -4,8 +4,8 @@
 import click
 from . import __prog_name__, __version__, __author__
 from . import get_logger
-from . import btsvr
-from . import robottank
+from . import btsersvr
+# from . import robottank
 
 
 @click.group(invoke_without_command=True,
@@ -30,8 +30,8 @@ def cli(ctx, opt0, debug):
         print(ctx.get_help())
 
 
-cli.add_command(btsvr)
-cli.add_command(robottank)
+cli.add_command(btsersvr)
+# cli.add_command(robottank)
 
 
 if __name__ == '__main__':
