@@ -27,17 +27,17 @@ class BtSerSvr(threading.Thread):
     def run(self):
         self.__log.debug('')
 
-        flag_err = False
         while True:
             svr_sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-
-            self.__log.debug('connecting..')
 
             svr_sock.bind(("", self._port))
             svr_sock.listen(self.NUM_LISTEN)
 
+            self.__log.info('waiting ...')
+
             clnt_sock, addr = svr_sock.accept()
-            self.__log.debug('connected:%s', addr)
+
+            self.__log.info('connected:%s', addr)
 
             while True:
                 try:

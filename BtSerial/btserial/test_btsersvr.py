@@ -25,7 +25,7 @@ class Test_BtSerSvr:
         btsersvr.start()
 
         while True:
-            print(time.strftime('%Y/%m/%d(%a) %H:%M:%S'))
+            self.__log.debug('running')
             time.sleep(5)
 
     def cb_func(self, data):
