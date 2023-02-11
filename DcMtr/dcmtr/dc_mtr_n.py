@@ -18,6 +18,7 @@ class DcMtrN:
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self._pi = pi
         self._pin = pin
+
         self._mtr_n = len(self._pin)
         self._dc_mtr = list(range(self._mtr_n))
 
@@ -29,7 +30,7 @@ class DcMtrN:
 
         # 逆起電力対策
         self.set_stop()
-        time.sleep(0.1)
+        time.sleep(0.02)  # XXX 要調整
 
         for i in range(self._mtr_n):
             ret_speed.append(self._dc_mtr[i].set_speed(speed[i]))

@@ -17,6 +17,7 @@ CMD = {
     'STOP': ['stop', 's', 'S'],
     'BREAK': ['break', 'b', 'B' ' '],
     'DELAY': ['delay', 'sleep', 't', 'T'],
+    'CLEAR': ['clear', 'cancel', 'c', 'C'],
     'NULL': ['null']
 }
 
@@ -33,7 +34,7 @@ class DcMtrWorker(threading.Thread):
         self._svr = svr
 
         self.active = False
-        self.cmdq = queue.Queue()
+        self.cmdq = queue.SimpleQueue()
 
         super().__init__(daemon=True)
 
@@ -49,13 +50,36 @@ class DcMtrWorker(threading.Thread):
         cmd: "<cmd_name> <params>.."
         """
         self.__log.debug('cmd=%s', cmd)
+
         self.cmdq.put(cmd)
 
     def recv(self):
+        """
+        """
         self.__log.debug('')
+
         cmd = self.cmdq.get()
         self.__log.debug('cmd=%s', cmd)
+
         return cmd
+
+    def clear_cmds(self):
+        """
+        clear command queue
+        """
+        self.__log.debug('')
+
+        while not self.cmdq.empty():
+            try:
+                cmd = self.cmdq.get_nowait()
+            except queue.Empty as e:
+                self.__log.debug('%s:%s', type(e).__name__, e)
+                break
+            except Exception as e:
+                self.__log.error('%s:%s', type(e).__name__, e)
+                break
+            else:
+                self.__log.debug('ignore cmd: %s', cmd)
 
     def run(self):
         self.__log.debug('')
@@ -169,6 +193,11 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
             if len(cmd) == 0:
                 msg = 'No data .. disconnect'
                 self.__log.warning(msg)
+                break
+
+            if cmd[0] in CMD['CLEAR']:
+                self._svr._mtr_worker.clear_cmds()
+                self._svr._mtr_worker.send([CMD['STOP'][0]])
                 break
 
             self._svr._mtr_worker.send(cmd)

@@ -5,7 +5,6 @@
 #
 import click
 import time
-from enum import Enum, auto
 from dcmtr import DcMtrClient
 from .my_logger import get_logger
 from . import BtKbd
@@ -19,6 +18,7 @@ class Test_RobotTank:
     DEF_BASES_SPEED = 60
     CALIB_STEP = 5
     ROT_STEP = 30
+    DELAY1 = 0.4
 
     def __init__(self, devs, dc_mtr, debug=False):
         self._dbg = debug
@@ -89,6 +89,8 @@ class Test_RobotTank:
         d_speed = [0, 0]
 
         if keycode in ['KEY_ENTER', 'KEY_PLAYPAUSE']:
+            self._dc_mtr.send_cmdline('clear')
+
             self._speed = [0, 0]
 
         if keycode == 'KEY_VOLUMEUP':
@@ -125,34 +127,34 @@ class Test_RobotTank:
 
 
         if keycode == 'KEY_UP':
-            if self._speed[0] != self._speed[1]:
-                speed = sum(self._speed) / len(self._speed)
-                self._speed = [speed, speed]
-            elif keyval == 'PUSH':
-                d_speed = [self.SPEED_STEP, self.SPEED_STEP]
-            else:
-                d_speed = [self.SPEED_STEP / 4, self.SPEED_STEP / 4]
+            self._dc_mtr.send_cmdline('clear')
+
+            self._speed = [self._base_speed[0], self._base_speed[1]]
+            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+            return
 
         if keycode == 'KEY_DOWN':
-            if self._speed[0] != self._speed[1]:
-                speed = sum(self._speed) / len(self._speed)
-                self._speed = [speed, speed]
-            elif keyval == 'PUSH':
-                d_speed = [-self.SPEED_STEP, -self.SPEED_STEP]
-            else:
-                d_speed = [-self.SPEED_STEP / 4, -self.SPEED_STEP / 4]
+            self._dc_mtr.send_cmdline('clear')
+
+            self._speed = [-self._base_speed[0], -self._base_speed[1]]
+            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+            return
 
         if keycode == 'KEY_LEFT':
-            if keyval == 'PUSH':
-                d_speed = [-self.ROT_STEP, self.ROT_STEP]
-            else:
-                d_speed = [-self.ROT_STEP / 4, self.ROT_STEP / 4]
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self._speed[0] - self.ROT_STEP,
+                                       self._speed[1] + self.ROT_STEP))
+            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
+            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+            return
 
         if keycode == 'KEY_RIGHT':
-            if keyval == 'PUSH':
-                d_speed = [self.ROT_STEP, -self.ROT_STEP]
-            else:
-                d_speed = [self.ROT_STEP / 4, -self.ROT_STEP / 4]
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self._speed[0] + self.ROT_STEP,
+                                       self._speed[1] - self.ROT_STEP))
+            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
+            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+            return
 
         if keycode == 'KEY_Q':
             d_speed = [self.SPEED_STEP, 0]
