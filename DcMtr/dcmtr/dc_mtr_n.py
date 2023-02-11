@@ -30,7 +30,7 @@ class DcMtrN:
 
         # 逆起電力対策
         self.set_stop()
-        time.sleep(0.02)  # XXX 要調整
+        time.sleep(0.03)  # XXX 要調整
 
         for i in range(self._mtr_n):
             ret_speed.append(self._dc_mtr[i].set_speed(speed[i]))

@@ -174,10 +174,10 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
                 return
             except BaseException as e:
                 self.__log.warning('BaseException:%s:%s.', type(e), e)
-                # XXX send stop
+                ## XXX send stop
                 return
 
-            # decode UTF-8
+            ## decode UTF-8
             try:
                 decoded_data = net_data.decode('utf-8')
             except UnicodeDecodeError as e:
@@ -186,13 +186,13 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
             else:
                 self.__log.debug('decoded_data:%a', decoded_data)
 
-            # remove white spaces and split
+            ## white spaces and split
             cmd = decoded_data.split()
             self.__log.info('cmd=%s', cmd)
 
             if len(cmd) == 0:
-                msg = 'No data .. disconnect'
-                self.__log.warning(msg)
+                ## msg = 'No data .. disconnect'
+                ## self.__log.warning(msg)
                 break
 
             if cmd[0] in CMD['CLEAR']:

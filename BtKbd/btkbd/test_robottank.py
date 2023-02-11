@@ -18,7 +18,8 @@ class Test_RobotTank:
     DEF_BASES_SPEED = 60
     CALIB_STEP = 5
     ROT_STEP = 30
-    DELAY1 = 0.4
+    DELAY1 = 0.05
+    DELAY_TURN = 0.4
 
     def __init__(self, devs, dc_mtr, debug=False):
         self._dbg = debug
@@ -44,6 +45,8 @@ class Test_RobotTank:
 
         self._speed = [0, 0]
         self._base_speed = [self.DEF_BASES_SPEED, self.DEF_BASES_SPEED]
+        self._prev_keycode = None
+        self._prev_keyval = None
 
     def main(self):
         self.__log.debug('')
@@ -84,20 +87,35 @@ class Test_RobotTank:
         if keyval in ['RELEASE', 'HOLD']:
             return
 
-        # keyval != 'RELEASE'
+        # keyval in ['PUSH']
 
         d_speed = [0, 0]
 
-        if keycode in ['KEY_ENTER', 'KEY_PLAYPAUSE']:
+        if keycode != self._prev_keycode:
             self._dc_mtr.send_cmdline('clear')
+            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
 
+
+        if keycode in ['KEY_ENTER', 'KEY_PLAYPAUSE']:
             self._speed = [0, 0]
 
-        if keycode == 'KEY_VOLUMEUP':
+        if keycode in ['KEY_UP', 'KEY_VOLUMEUP']:
             self._speed = [self._base_speed[0], self._base_speed[1]]
 
-        if keycode == 'KEY_VOLUMEDOWN':
+        if keycode in ['KEY_DOWN', 'KEY_VOLUMEDOWN']:
             self._speed = [-self._base_speed[0], -self._base_speed[1]]
+
+        if keycode == 'KEY_LEFT':
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self._speed[0] - self.ROT_STEP,
+                                       self._speed[1] + self.ROT_STEP))
+            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
+
+        if keycode == 'KEY_RIGHT':
+            self._dc_mtr.send_cmdline('speed %s %s' %
+                                      (self._speed[0] + self.ROT_STEP,
+                                       self._speed[1] - self.ROT_STEP))
+            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
 
         if keycode == 'KEY_PREVIOUSSONG':
             self._speed = [0, self._base_speed[1]]
@@ -105,6 +123,7 @@ class Test_RobotTank:
         if keycode == 'KEY_NEXTSONG':
             self._speed = [self._base_speed[0], 0]
 
+        #
         if keycode == 'BTN_LEFT':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   self.CALIB_STEP)
@@ -125,52 +144,12 @@ class Test_RobotTank:
                                                   -self.CALIB_STEP)
             d_speed = [0, -self.CALIB_STEP]
 
-
-        if keycode == 'KEY_UP':
-            self._dc_mtr.send_cmdline('clear')
-
-            self._speed = [self._base_speed[0], self._base_speed[1]]
-            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
-            return
-
-        if keycode == 'KEY_DOWN':
-            self._dc_mtr.send_cmdline('clear')
-
-            self._speed = [-self._base_speed[0], -self._base_speed[1]]
-            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
-            return
-
-        if keycode == 'KEY_LEFT':
-            self._dc_mtr.send_cmdline('speed %s %s' %
-                                      (self._speed[0] - self.ROT_STEP,
-                                       self._speed[1] + self.ROT_STEP))
-            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
-            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
-            return
-
-        if keycode == 'KEY_RIGHT':
-            self._dc_mtr.send_cmdline('speed %s %s' %
-                                      (self._speed[0] + self.ROT_STEP,
-                                       self._speed[1] - self.ROT_STEP))
-            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
-            self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
-            return
-
-        if keycode == 'KEY_Q':
-            d_speed = [self.SPEED_STEP, 0]
-
-        if keycode == 'KEY_A':
-            d_speed = [-self.SPEED_STEP, 0]
-
-        if keycode == 'KEY_O':
-            d_speed = [0, self.SPEED_STEP]
-
-        if keycode == 'KEY_L':
-            d_speed = [0, -self.SPEED_STEP]
-
         # move
         self.speed_add(d_speed)
         self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+
+        self._prev_keycode = keycode
+        self._prev_keyval = keyval
 
 
 @click.command(help="Robot Tank")
