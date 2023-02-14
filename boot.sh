@@ -8,4 +8,5 @@ $ROBOTDIR/start_server.sh &
 
 sleep 2
 
-exec $ROBOTDIR/start_kbd.sh
+#exec $ROBOTDIR/start_kbd.sh
+exec $ROBOTDIR/start_bt8bitdozer2.sh
