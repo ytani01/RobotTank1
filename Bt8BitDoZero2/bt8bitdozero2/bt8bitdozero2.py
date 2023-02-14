@@ -12,7 +12,7 @@ from .my_logger import get_logger
 
 class Bt8BitDoZero2(threading.Thread):
     EV_KEY_VAL = ('RELEASE', 'PUSH', 'HOLD')
-    EV_ABS_VAL = ('LOW', 'MIDDLE', 'HIGHT')  # int(value/127)
+    EV_ABS_VAL = ('LOW', 'MIDDLE', 'HIGH')  # int(value/127)
     DEVFILE_PREFIX = '/dev/input/event'
 
     def __init__(self, dev=0, cb_func=None, debug=False):
@@ -22,7 +22,7 @@ class Bt8BitDoZero2(threading.Thread):
 
         self.dev = dev
         self.cb_func = cb_func
-        
+
         self.input_dev_file = self.DEVFILE_PREFIX + str(self.dev)
         self.__log.debug('input_dev_file=%s', self.input_dev_file)
 
@@ -32,7 +32,7 @@ class Bt8BitDoZero2(threading.Thread):
 
     def wait_key_event(self):
         self.__log.debug('%s', self.input_dev_file)
-        
+
         for ev in self.input_dev.read_loop():
             if ev.type in [evdev.events.EV_KEY, evdev.events.EV_ABS]:
                 break
@@ -42,7 +42,7 @@ class Bt8BitDoZero2(threading.Thread):
         self.__log.debug('(ev.type, ev.code, ev.value)=%s',
                          (ev.type, ev.code, ev.value))
 
-        if self.cb_func != None:
+        if self.cb_func is not None:
             self.cb_func(self.dev, ev.type, ev.code, ev.value)
 
         return (ev.type, ev.code, ev.value)
@@ -77,13 +77,12 @@ class Bt8BitDoZero2(threading.Thread):
                     self.__log.info('Connected: %s', self.input_dev_file)
 
             self.__log.debug('%s(%d) %s(%d) %s(%d)',
-                             evdev.ecodes.EV[evtype], evtype, 
-                             __class__.keycode2str(evtype, code), code, 
+                             evdev.ecodes.EV[evtype], evtype,
+                             __class__.keycode2str(evtype, code), code,
                              __class__.keyval2str(evtype, value), value)
 
     @classmethod
     def keycode2str(cls, evtype, code):
-        strlist = evdev.ecodes.bytype[evtype][code]
         return evdev.ecodes.bytype[evtype][code]
 
     @classmethod

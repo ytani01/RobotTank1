@@ -83,19 +83,26 @@ class Test_RobotTank:
 
         d_speed = [0, 0]
 
+        """
         if keycode != self._prev_keycode:
             self._dc_mtr.send_cmdline('clear')
             self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
+"""
 
-
-        if keyval in ['RELEASE', 'MIDDLE']:
+        if keyval in ['RELEASE']:
             self._speed = [0, 0]
 
-        if 'BTN_X' in keycode and keyval == 'PUSH':
+        if 'BTN_A' in keycode and keyval == 'PUSH':
             self._speed = [self._base_speed[0], self._base_speed[1]]
 
-        if 'BTN_B' in keycode and keyval == 'PUSH':
+        if 'BTN_Y' in keycode and keyval == 'PUSH':
             self._speed = [-self._base_speed[0], -self._base_speed[1]]
+
+        if 'BTN_X' in keycode and keyval == 'PUSH':
+            self._speed = [-self._base_speed[0], self._base_speed[1]]
+
+        if 'BTN_B' in keycode and keyval == 'PUSH':
+            self._speed = [self._base_speed[0], -self._base_speed[1]]
 
         if 'BTN_XXX' in keycode and keyval == 'PUSH':
             self._dc_mtr.send_cmdline('speed %s %s' %
@@ -109,32 +116,25 @@ class Test_RobotTank:
                                        self._speed[1] - self.ROT_STEP))
             self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
 
-        if 'BTN_Y' in keycode and keyval == 'PUSH':
-            self._speed = [-self._base_speed[0], self._base_speed[1]]
-
-        if 'BTN_A' in keycode and keyval == 'PUSH':
-            self._speed = [self._base_speed[0], -self._base_speed[1]]
-
-        #
-        if keycode == 'BTN_LEFT':
-            self._base_speed[0] = self.speed_add1(self._base_speed[0],
-                                                  self.CALIB_STEP)
-            d_speed = [self.CALIB_STEP, 0]
-
-        if keycode == 'BTN_RIGHT':
+        # calibration
+        if 'ABS_Y' in keycode and keyval == 'LOW':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   -self.CALIB_STEP)
-            d_speed = [-self.CALIB_STEP, 0]
+            self._base_speed[1] = self.speed_add1(self._base_speed[0],
+                                                  +self.CALIB_STEP)
 
-        if keycode == 'KEY_PAGEUP':
-            self._base_speed[1] = self.speed_add1(self._base_speed[1],
-                                                  self.CALIB_STEP)
-            d_speed = [0, self.CALIB_STEP]
+            d_speed = [-self.CALIB_STEP, self.CALIB_STEP]
 
-        if keycode == 'KEY_PAGEDOWN':
-            self._base_speed[1] = self.speed_add1(self._base_speed[1],
+        if 'ABS_Y' in keycode and keyval == 'HIGH':
+            self._base_speed[0] = self.speed_add1(self._base_speed[0],
+                                                  +self.CALIB_STEP)
+            self._base_speed[1] = self.speed_add1(self._base_speed[0],
                                                   -self.CALIB_STEP)
-            d_speed = [0, -self.CALIB_STEP]
+
+            d_speed = [self.CALIB_STEP, -self.CALIB_STEP]
+
+        if keyval == 'MIDDLE':
+            return
 
         # move
         self.speed_add(d_speed)
