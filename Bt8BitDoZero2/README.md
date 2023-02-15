@@ -4,6 +4,11 @@ Bluetooth gamepad
 
 ## Setup
 
+### 8BitDo zero 2
+
+Power on: [B]+[start]
+
+
 ### Bluetooth pairing
 
 ``` shell

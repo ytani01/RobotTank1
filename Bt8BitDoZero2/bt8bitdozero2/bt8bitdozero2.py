@@ -11,11 +11,32 @@ from .my_logger import get_logger
 
 
 class Bt8BitDoZero2(threading.Thread):
-    EV_KEY_VAL = ('RELEASE', 'PUSH', 'HOLD')
-    EV_ABS_VAL = ('LOW', 'MIDDLE', 'HIGH')  # int(value/127)
     DEVFILE_PREFIX = '/dev/input/event'
 
+    EV_KEY_VAL = ('RELEASE', 'PUSH', 'HOLD')
+    EV_ABS_VAL = ('LOW', 'MIDDLE', 'HIGH')  # int(value/127)
+
+    BTN = {
+        'A': [1, 304],
+        'B': [1, 305],
+        'X': [1, 307],
+        'Y': [1, 308],
+        'UD': [3, 1],
+        'LR': [3, 0],
+        'TL': [1, 310],
+        'TR': [3, 311],
+        'SEL': [1, 314],
+        'ST': [1, 315]
+        }
+
     def __init__(self, dev=0, cb_func=None, debug=False):
+        """
+        Parameters
+        ----------
+        dev : int
+        cb_func : func
+        debug : bool
+        """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.__log.debug('dev=%d', dev)
@@ -31,6 +52,9 @@ class Bt8BitDoZero2(threading.Thread):
         super().__init__(daemon=True)
 
     def wait_key_event(self):
+        """
+        キーイベントを待つ
+        """
         self.__log.debug('%s', self.input_dev_file)
 
         for ev in self.input_dev.read_loop():

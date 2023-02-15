@@ -34,7 +34,8 @@ class Test_RobotTank:
             bt8bitdozero2 = None
             while bt8bitdozero2 is None:
                 try:
-                    bt8bitdozero2 = Bt8BitDoZero2(d, self.cb_func, debug=self._dbg)
+                    bt8bitdozero2 = Bt8BitDoZero2(
+                        d, self.cb_func, debug=self._dbg)
                 except Exception as e:
                     self.__log.error('%s:%s', type(e).__name__, e)
                     time.sleep(2)
@@ -45,8 +46,8 @@ class Test_RobotTank:
 
         self._speed = [0, 0]
         self._base_speed = [self.DEF_BASES_SPEED, self.DEF_BASES_SPEED]
-        self._prev_keycode = None
-        self._prev_keyval = None
+        self._prev_code = None
+        self._prev_val = None
 
     def main(self):
         self.__log.debug('')
@@ -71,53 +72,50 @@ class Test_RobotTank:
         self._speed[0] = self.speed_add1(self._speed[0], step[0])
         self._speed[1] = self.speed_add1(self._speed[1], step[1])
 
-    def cb_func(self, dev, evtype, code, value):
+    def cb_func(self, dev, evtype, code, val):
         """ callback function """
 
-        keycode = Bt8BitDoZero2.keycode2str(evtype, code)  # !! keycodeがlistのこともある !!
-        keyval = Bt8BitDoZero2.keyval2str(evtype, value)
+        # !! code_strがlistのこともある !!
+        code_str = Bt8BitDoZero2.keycode2str(evtype, code)
+        val_str = Bt8BitDoZero2.keyval2str(evtype, val)
 
-        self.__log.info('dev=%d, evtype=%d, code=%d:%s, value=%d:%s',
-                        dev, evtype, code, keycode, value, keyval)
+        self.__log.info('dev=%d, evtype=%d, code=%d:%s, val=%d:%s',
+                        dev, evtype, code, code_str, val, val_str)
 
+        if val_str in ['RELEASE']:
+            return
 
         d_speed = [0, 0]
 
-        """
-        if keycode != self._prev_keycode:
-            self._dc_mtr.send_cmdline('clear')
-            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY1))
-"""
-
-        if keyval in ['RELEASE']:
+        if val_str in ['MIDDLE']:
             self._speed = [0, 0]
 
-        if 'BTN_A' in keycode and keyval == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'LOW':
             self._speed = [self._base_speed[0], self._base_speed[1]]
 
-        if 'BTN_Y' in keycode and keyval == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'HIGH':
             self._speed = [-self._base_speed[0], -self._base_speed[1]]
 
-        if 'BTN_X' in keycode and keyval == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'HIGH':
             self._speed = [-self._base_speed[0], self._base_speed[1]]
 
-        if 'BTN_B' in keycode and keyval == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'LOW':
             self._speed = [self._base_speed[0], -self._base_speed[1]]
 
-        if 'BTN_XXX' in keycode and keyval == 'PUSH':
+        if 'BTN_XXX' in code_str and val_str == 'PUSH':
             self._dc_mtr.send_cmdline('speed %s %s' %
                                       (self._speed[0] - self.ROT_STEP,
                                        self._speed[1] + self.ROT_STEP))
             self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
 
-        if 'BTN_XXX' in keycode and keyval == 'PUSH':
+        if 'BTN_XXX' in code_str and val_str == 'PUSH':
             self._dc_mtr.send_cmdline('speed %s %s' %
                                       (self._speed[0] + self.ROT_STEP,
                                        self._speed[1] - self.ROT_STEP))
             self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
 
         # calibration
-        if 'ABS_Y' in keycode and keyval == 'LOW':
+        if [evtype, code] == Bt8BitDoZero2.BTN['B'] and val_str == 'PUSH':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   -self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
@@ -125,7 +123,7 @@ class Test_RobotTank:
 
             d_speed = [-self.CALIB_STEP, self.CALIB_STEP]
 
-        if 'ABS_Y' in keycode and keyval == 'HIGH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['X'] and val_str == 'PUSH':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   +self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
@@ -133,15 +131,28 @@ class Test_RobotTank:
 
             d_speed = [self.CALIB_STEP, -self.CALIB_STEP]
 
-        if keyval == 'MIDDLE':
-            return
+        if [evtype, code] == Bt8BitDoZero2.BTN['Y'] and val_str == 'PUSH':
+            self._base_speed[0] = self.speed_add1(self._base_speed[0],
+                                                  +self.CALIB_STEP)
+            self._base_speed[1] = self.speed_add1(self._base_speed[0],
+                                                  +self.CALIB_STEP)
+
+            d_speed = [self.CALIB_STEP, self.CALIB_STEP]
+
+        if [evtype, code] == Bt8BitDoZero2.BTN['A'] and val_str == 'PUSH':
+            self._base_speed[0] = self.speed_add1(self._base_speed[0],
+                                                  -self.CALIB_STEP)
+            self._base_speed[1] = self.speed_add1(self._base_speed[0],
+                                                  -self.CALIB_STEP)
+
+            d_speed = [-self.CALIB_STEP, -self.CALIB_STEP]
 
         # move
         self.speed_add(d_speed)
         self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
 
-        self._prev_keycode = keycode
-        self._prev_keyval = keyval
+        self._prev_code = code
+        self._prev_val = val
 
 
 @click.command(help="Robot Tank")
