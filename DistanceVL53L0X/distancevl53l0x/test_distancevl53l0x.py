@@ -6,6 +6,7 @@
 #
 import click
 import time
+import datetime
 from .my_logger import get_logger
 from . import DistanceVL53L0X
 
@@ -38,13 +39,13 @@ class Test_DistanceVL53L0X:
                 if distance > 500:
                     distance_graph = '*' * 50 + '!'
 
-                tm = time.strftime('%Y/%m/%d(%a) %H:%M:%S')
+                tm = datetime.datetime.now().strftime('%Y/%m/%d(%a) %H:%M:%S.%f')
+                print('%s %4d mm %s' % (tm, distance, distance_graph))
 
-                print('%s %04d %s' % (tm, distance, distance_graph))
                 time.sleep(self._interval)
 
         except KeyboardInterrupt as e:
-            self.__log.error('%s:%s', type(e).__name__, e)
+            self.__log.warning('%s:%s', type(e).__name__, e)
 
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
@@ -57,7 +58,7 @@ class Test_DistanceVL53L0X:
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def distancevl53l0x(obj, interval, debug):
+def distance(obj, interval, debug):
     """ distancevl53l0x """
     __log = get_logger(__name__, obj['debug'] or debug)
     __log.debug('obj=%s, interval=%s', obj, interval)

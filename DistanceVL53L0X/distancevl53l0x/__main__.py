@@ -4,7 +4,7 @@
 import click
 from . import __prog_name__, __version__, __author__
 from . import get_logger
-from . import distancevl53l0x
+from . import distance
 
 
 @click.group(invoke_without_command=True,
@@ -29,7 +29,7 @@ def cli(ctx, opt0, debug):
         print(ctx.get_help())
 
 
-cli.add_command(distancevl53l0x)
+cli.add_command(distance)
 
 
 if __name__ == '__main__':

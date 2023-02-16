@@ -20,6 +20,8 @@ class DistanceVL53L0X(threading.Thread):
     DEF_I2C_BUS = 1
     DEF_I2C_ADDR = 0x29
 
+    DISTANCE_MAX = 8190
+
     def __init__(self,
                  i2c_bus=DEF_I2C_BUS, i2c_addr=DEF_I2C_ADDR,
                  mode=Vl53l0xAccuracyMode.LONG_RANGE,
@@ -86,11 +88,11 @@ class DistanceVL53L0X(threading.Thread):
         while self._active:
             try:
                 self._distance = self._tof.get_distance()
+                time.sleep(self._timing / 1000000.0)
+
             except Exception as e:
                 self.__log.error('%s:%s', type(e).__name__, e)
                 self._active = False
                 break
-
-            time.sleep(self._timing / 1000000.0)
 
         self._end()
