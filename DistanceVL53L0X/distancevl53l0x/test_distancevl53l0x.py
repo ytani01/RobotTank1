@@ -14,6 +14,8 @@ from . import DistanceVL53L0X
 class Test_DistanceVL53L0X:
     """ Test DistanceVL53L0X class """
 
+    DISTANCE_MAX = 500
+
     def __init__(self, interval=1, debug=False):
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
@@ -27,6 +29,11 @@ class Test_DistanceVL53L0X:
         self.__log.debug('')
 
         self._distancevl53l0x.start()
+        self._distancevl53l0x.wait_active()
+
+        if self._interval <= 0.0:
+            self._interval = self._distancevl53l0x.get_timing()
+            self.__log.debug('interval=%s', self._interval)
 
         try:
             while True:
@@ -36,10 +43,11 @@ class Test_DistanceVL53L0X:
                     continue
 
                 distance_graph = '*' * int(distance / 10.0)
-                if distance > 500:
-                    distance_graph = '*' * 50 + '!'
+                if distance > self.DISTANCE_MAX:
+                    distance_graph = '*' * int(self.DISTANCE_MAX / 10) + '!'
 
-                tm = datetime.datetime.now().strftime('%Y/%m/%d(%a) %H:%M:%S.%f')
+                tm = datetime.datetime.now().strftime(
+                    '%Y/%m/%d(%a) %H:%M:%S.%f')
                 print('%s %4d mm %s' % (tm, distance, distance_graph))
 
                 time.sleep(self._interval)

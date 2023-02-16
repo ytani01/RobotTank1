@@ -29,6 +29,9 @@ class DistanceVL53L0X(threading.Thread):
         """
         Parameters
         ----------
+        i2c_bus: int
+        i2c_addr: int
+        mode: Vl3l0xAccuracyMode
         """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
@@ -47,9 +50,6 @@ class DistanceVL53L0X(threading.Thread):
 
         super().__init__(daemon=True)
 
-    def is_active(self):
-        return self._active
-
     def _start(self):
         self._tof.open()
 
@@ -67,6 +67,28 @@ class DistanceVL53L0X(threading.Thread):
         self._active = False
         self.join()
         self.__log.debug('END')
+
+    def is_active(self):
+        return self._active
+
+    def get_timing(self):
+        return self._timing / 1000000.0
+
+    def wait_active(self, timelimit=5.0):
+        self.__log.debug('timelimit=%s', timelimit)
+
+        start_time = time.time()
+        delay = 0.0
+
+        while not self._active:
+            delay = time.time() - start_time
+
+            if delay >= timelimit:
+                break
+
+            time.sleep(0.1)
+
+        return delay
 
     def get_distance(self):
         """
