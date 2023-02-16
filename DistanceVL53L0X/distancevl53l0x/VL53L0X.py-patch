@@ -1,0 +1,32 @@
+--- ../../../VL53L0X-python/python/VL53L0X.py	2023-02-15 21:56:06.165340757 +0900
++++ VL53L0X.py	2023-02-16 22:47:10.279307225 +0900
+@@ -22,6 +22,7 @@
+ # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ # SOFTWARE.
+ from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_uint, pointer, c_ubyte, c_uint8, c_uint32
++import os
+ import sysconfig
+ import pkg_resources
+ SMBUS='smbus'
+@@ -80,17 +81,20 @@
+ 
+ # Load VL53L0X shared lib
+ suffix = sysconfig.get_config_var('EXT_SUFFIX')
++suffix = None
+ if suffix is None:
+     suffix = ".so"
+-_POSSIBLE_LIBRARY_LOCATIONS = ['../bin'] + site.getsitepackages() + [site.getusersitepackages()]
++_POSSIBLE_LIBRARY_LOCATIONS = ['.', '../bin'] + site.getsitepackages() + [site.getusersitepackages()] + os.environ['PATH'].split(':')
+ for lib_location in _POSSIBLE_LIBRARY_LOCATIONS:
+     try:
+         _TOF_LIBRARY = CDLL(lib_location + '/vl53l0x_python' + suffix)
++        print('_TOF_LIBRARY._name=%s' % (_TOF_LIBRARY._name))
+         break
+     except OSError:
+         pass
+ else:
+     raise OSError('Could not find vl53l0x_python' + suffix)
++print('')
+ 
+ 
+ class VL53L0X:

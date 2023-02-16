@@ -1,0 +1,8 @@
+--- ../../../VL53L0X-python/python/VL53L0X_example.py	2023-02-15 21:56:06.165340757 +0900
++++ VL53L0X_example.py	2023-02-16 18:25:54.095334900 +0900
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python
++#!/usr/bin/env python3
+ 
+ # MIT License
+ # 

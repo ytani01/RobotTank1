@@ -4,114 +4,93 @@
 #
 # -*- coding: utf-8 -*-
 #
-import evdev
 import time
 import threading
+from .VL53L0X import VL53L0X, Vl53l0xAccuracyMode
 from .my_logger import get_logger
 
 
+class DistanceVl53l0xError(RuntimeError):
+    pass
+
+
 class DistanceVL53L0X(threading.Thread):
-    DEVFILE_PREFIX = '/dev/input/event'
+    """
+    """
+    DEF_I2C_BUS = 1
+    DEF_I2C_ADDR = 0x29
 
-    EV_KEY_VAL = ('RELEASE', 'PUSH', 'HOLD')
-    EV_ABS_VAL = ('LOW', 'MIDDLE', 'HIGH')  # int(value/127)
-
-    BTN = {
-        'A': [1, 304],
-        'B': [1, 305],
-        'X': [1, 307],
-        'Y': [1, 308],
-        'UD': [3, 1],
-        'LR': [3, 0],
-        'TL': [1, 310],
-        'TR': [3, 311],
-        'SEL': [1, 314],
-        'ST': [1, 315]
-        }
-
-    def __init__(self, dev=0, cb_func=None, debug=False):
+    def __init__(self,
+                 i2c_bus=DEF_I2C_BUS, i2c_addr=DEF_I2C_ADDR,
+                 mode=Vl53l0xAccuracyMode.LONG_RANGE,
+                 debug=False):
         """
         Parameters
         ----------
-        dev : int
-        cb_func : func
-        debug : bool
         """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
-        self.__log.debug('dev=%d', dev)
+        self.__log.debug('i2c: %d, 0x%X', i2c_bus, i2c_addr)
 
-        self.dev = dev
-        self.cb_func = cb_func
+        self._i2c_bus = i2c_bus
+        self._i2c_addr = i2c_addr
+        self._mode = mode
 
-        self.input_dev_file = self.DEVFILE_PREFIX + str(self.dev)
-        self.__log.debug('input_dev_file=%s', self.input_dev_file)
+        self._tof = VL53L0X(
+            i2c_bus=self._i2c_bus, i2c_address=self._i2c_addr)
 
-        self.input_dev = evdev.device.InputDevice(self.input_dev_file)
+        self._timing = None
+        self._distance = None
+        self._active = False
 
         super().__init__(daemon=True)
 
-    def wait_key_event(self):
+    def is_active(self):
+        return self._active
+
+    def _start(self):
+        self._tof.open()
+
+        self._tof.start_ranging(self._mode)
+
+        self._timing = self._tof.get_timing()
+        self.__log.debug('timing=%s', self._timing)
+
+    def _end(self):
+        self._tof.stop_ranging()
+        self._tof.close()
+
+    def end(self):
+        self.__log.debug('')
+        self._active = False
+        self.join()
+        self.__log.debug('END')
+
+    def get_distance(self):
         """
-        キーイベントを待つ
         """
-        self.__log.debug('%s', self.input_dev_file)
+        if not self._active:
+            self.__log.warning('active=%s', self._active)
+            return None
 
-        for ev in self.input_dev.read_loop():
-            if ev.type in [evdev.events.EV_KEY, evdev.events.EV_ABS]:
-                break
-
-            self.__log.debug('ignore: %s', ev)
-
-        self.__log.debug('(ev.type, ev.code, ev.value)=%s',
-                         (ev.type, ev.code, ev.value))
-
-        if self.cb_func is not None:
-            self.cb_func(self.dev, ev.type, ev.code, ev.value)
-
-        return (ev.type, ev.code, ev.value)
+        self.__log.debug('distance=%s', self._distance)
+        return self._distance
 
     def run(self):
         self.__log.debug('')
 
-        flag_err = False
-        while True:
+        self._start()
+
+        self._active = True
+
+        while self._active:
             try:
-                self.input_dev = evdev.device.InputDevice(self.input_dev_file)
+                self._distance = self._tof.get_distance()
             except Exception as e:
-                flag_err = True
                 self.__log.error('%s:%s', type(e).__name__, e)
-                time.sleep(2)
-                continue
-            else:
-                if flag_err:
-                    flag_err = False
-                    self.__log.info('Connected: %s', self.input_dev_file)
+                self._active = False
+                break
 
-            try:
-                (evtype, code, value) = self.wait_key_event()
-            except Exception as e:
-                flag_err = True
-                self.__log.error('%s:%s', type(e).__name__, e)
-                time.sleep(2)
-                continue
-            else:
-                if flag_err:
-                    flag_err = False
-                    self.__log.info('Connected: %s', self.input_dev_file)
+            time.sleep(self._timing / 1000000.0)
 
-            self.__log.debug('%s(%d) %s(%d) %s(%d)',
-                             evdev.ecodes.EV[evtype], evtype,
-                             __class__.keycode2str(evtype, code), code,
-                             __class__.keyval2str(evtype, value), value)
-
-    @classmethod
-    def keycode2str(cls, evtype, code):
-        return evdev.ecodes.bytype[evtype][code]
-
-    @classmethod
-    def keyval2str(cls, evtype, value):
-        if evtype == evdev.events.EV_ABS:
-            return cls.EV_ABS_VAL[int(value/127)]
-
-        return cls.EV_KEY_VAL[value]
+        self._end()

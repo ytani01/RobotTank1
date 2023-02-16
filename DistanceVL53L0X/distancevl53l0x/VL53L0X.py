@@ -22,6 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from ctypes import CDLL, CFUNCTYPE, POINTER, c_int, c_uint, pointer, c_ubyte, c_uint8, c_uint32
+import os
 import sysconfig
 import pkg_resources
 SMBUS='smbus'
@@ -83,16 +84,17 @@ suffix = sysconfig.get_config_var('EXT_SUFFIX')
 suffix = None
 if suffix is None:
     suffix = ".so"
-_POSSIBLE_LIBRARY_LOCATIONS = ['.', '../bin'] + site.getsitepackages() + [site.getusersitepackages()]
+_POSSIBLE_LIBRARY_LOCATIONS = ['.', '../bin'] + site.getsitepackages() + [site.getusersitepackages()] + os.environ['PATH'].split(':')
 for lib_location in _POSSIBLE_LIBRARY_LOCATIONS:
     try:
         _TOF_LIBRARY = CDLL(lib_location + '/vl53l0x_python' + suffix)
+        print('_TOF_LIBRARY._name=%s\n' % (_TOF_LIBRARY._name))
         break
     except OSError:
         pass
 else:
     raise OSError('Could not find vl53l0x_python' + suffix)
-print('_TOF_LIBRARY=%s' % (_TOF_LIBRARY))
+
 
 class VL53L0X:
     """VL53L0X ToF."""

@@ -6,9 +6,7 @@ __version__ = '0.0.1'
 __author__ = 'Yoichi Tanibayashi'
 
 from .distancevl53l0x import DistanceVL53L0X
-
 from .test_distancevl53l0x import distancevl53l0x
-
 from .my_logger import get_logger
 
 all = [__prog_name__, __version__, __author__,
