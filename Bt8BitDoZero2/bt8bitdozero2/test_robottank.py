@@ -82,40 +82,28 @@ class Test_RobotTank:
         self.__log.info('dev=%d, evtype=%d, code=%d:%s, val=%d:%s',
                         dev, evtype, code, code_str, val, val_str)
 
-        if val_str in ['RELEASE']:
+        if val_str in ['MIDDLE']:
             return
 
         d_speed = [0, 0]
 
-        if val_str in ['MIDDLE']:
+        if val_str in ['RELEASE']:
             self._speed = [0, 0]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'LOW':
+        if [evtype, code] == Bt8BitDoZero2.BTN['A'] and val_str == 'PUSH':
             self._speed = [self._base_speed[0], self._base_speed[1]]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'HIGH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['Y'] and val_str == 'PUSH':
             self._speed = [-self._base_speed[0], -self._base_speed[1]]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'HIGH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['X'] and val_str == 'PUSH':
             self._speed = [-self._base_speed[0], self._base_speed[1]]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'LOW':
+        if [evtype, code] == Bt8BitDoZero2.BTN['B'] and val_str == 'PUSH':
             self._speed = [self._base_speed[0], -self._base_speed[1]]
 
-        if 'BTN_XXX' in code_str and val_str == 'PUSH':
-            self._dc_mtr.send_cmdline('speed %s %s' %
-                                      (self._speed[0] - self.ROT_STEP,
-                                       self._speed[1] + self.ROT_STEP))
-            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
-
-        if 'BTN_XXX' in code_str and val_str == 'PUSH':
-            self._dc_mtr.send_cmdline('speed %s %s' %
-                                      (self._speed[0] + self.ROT_STEP,
-                                       self._speed[1] - self.ROT_STEP))
-            self._dc_mtr.send_cmdline('delay %s' % (self.DELAY_TURN))
-
         # calibration
-        if [evtype, code] == Bt8BitDoZero2.BTN['B'] and val_str == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'LOW':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   -self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
@@ -123,7 +111,7 @@ class Test_RobotTank:
 
             d_speed = [-self.CALIB_STEP, self.CALIB_STEP]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['X'] and val_str == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['UD'] and val_str == 'HIGH':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   +self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
@@ -131,7 +119,8 @@ class Test_RobotTank:
 
             d_speed = [self.CALIB_STEP, -self.CALIB_STEP]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['Y'] and val_str == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'HIGH':
+
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   +self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
@@ -139,7 +128,7 @@ class Test_RobotTank:
 
             d_speed = [self.CALIB_STEP, self.CALIB_STEP]
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['A'] and val_str == 'PUSH':
+        if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'LOW':
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
                                                   -self.CALIB_STEP)
             self._base_speed[1] = self.speed_add1(self._base_speed[0],
