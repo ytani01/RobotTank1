@@ -7,9 +7,11 @@ __author__ = 'Yoichi Tanibayashi'
 
 from .distancevl53l0x import DistanceVL53L0X
 from .test_distancevl53l0x import distance
+from .test_robottankauto import robottankauto
 from .my_logger import get_logger
 
 all = [__prog_name__, __version__, __author__,
        'DistanceVL53L0X',
        'distance',
+       'robottankauto',
        'get_logger']
