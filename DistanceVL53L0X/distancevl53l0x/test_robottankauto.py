@@ -11,7 +11,7 @@ import random
 import threading
 from enum import Enum
 from dcmtr import DcMtrClient
-from bt8bitdozero2 import Bt8BitDoZero2
+from bt8bitdozero2 import Bt8BitDoZero2, Bt8BitDoZero2N
 from .my_logger import get_logger
 from . import DistanceVL53L0X
 
@@ -50,7 +50,7 @@ class SensorWatcher(threading.Thread):
 
         self._active = False
 
-        self._auto = True
+        self._auto = False
 
         super().__init__(daemon=True)
 
@@ -117,29 +117,67 @@ class Test_RobotTankAuto:
     SPEED_MAX = 100
     DEF_BASE_SPEED = 70
 
-    def __init__(self, offset=0.0, interval=0.0, dc_mtr=None, debug=False):
+    def __init__(self, devs=[], offset=0.0, interval=0.0, dc_mtr=None,
+                 debug=False):
         """
         Parameters
         ----------
         offset: float
         interval: float
         dc_mtr: DcMtrclient
+        devs: list()
         """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
-        self.__log.debug('offset=%s, interval=%s', offset, interval)
+        self.__log.debug('devs=%s, offset=%s, interval=%s',
+                         devs, offset, interval)
 
+        self._devs = devs
         self._offset = offset
         self._interval = interval
         self._dc_mtr = dc_mtr
 
         self._dir = Direction.LEFT
         self._base_speed = self.DEF_BASE_SPEED
+        self._auto = False
 
         self._sensor = DistanceVL53L0X(offset=self._offset, debug=self._dbg)
 
         self._watcher = SensorWatcher(
             self._dc_mtr, self._base_speed, self._sensor, debug=self._dbg)
+
+        self._bt8bitdozero2 = Bt8BitDoZero2N(
+            self._devs, self.cb, debug=self._dbg)
+
+    def cb(self, dev, evtype, code, val):
+        """  """
+        self.__log.debug('')
+
+        # !! code_strがlistのこともある !!
+        code_str = Bt8BitDoZero2.keycode2str(evtype, code)
+        val_str = Bt8BitDoZero2.keyval2str(evtype, val)
+
+        self.__log.info('dev=%d, evtype=%d, code=%d:%s, val=%d:%s',
+                        dev, evtype, code, code_str, val, val_str)
+
+        if [evtype, code] == Bt8BitDoZero2.BTN['SEL'] and val_str == 'PUSH':
+            self.toggle_auto()
+
+    def toggle_auto(self):
+        if self._auto:
+            self.auto_off()
+        else:
+            self.auto_on()
+
+    def auto_on(self):
+        self.__log.info('')
+        self._auto = True
+        self._watcher.auto_on()
+
+    def auto_off(self):
+        self.__log.info('')
+        self._auto = False
+        self._watcher.auto_off()
 
     def main(self):
         self.__log.debug('')
@@ -149,12 +187,19 @@ class Test_RobotTankAuto:
 
         self._watcher.start()
 
+        self._bt8bitdozero2.start()
+
         if self._interval <= 0.0:
             self._interval = self._sensor.get_timing()
             self.__log.debug('interval=%s', self._interval)
 
         try:
             while True:
+                if not self._auto:
+                    self.__log.debug('auto=%s', self._auto)
+                    time.sleep(1)
+                    continue
+
                 cmdline = 'speed 0 0'
 
                 if self._dir == Direction.LEFT:
@@ -182,6 +227,7 @@ class Test_RobotTankAuto:
 
 
 @click.command(help="Robot Tank Auto Pilot Test")
+@click.argument('devs', metavar='dev_num[0|1|2|4..]...', type=int, nargs=-1)
 @click.option('--offset', '-o', 'offset', type=float, default=0.0,
               help='distance sensor offset (mm)')
 @click.option('--interval', '-i', 'interval', type=float, default=0.0,
@@ -193,17 +239,17 @@ class Test_RobotTankAuto:
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def robottankauto(obj, offset, interval, svr_host, svr_port, debug):
+def robottankauto(obj, devs, offset, interval, svr_host, svr_port, debug):
     """ robottankauto """
     __log = get_logger(__name__, obj['debug'] or debug)
     __log.debug('obj=%s', obj)
-    __log.debug('offset=%s, interval=%s, svr=%s',
-                offset, interval, (svr_host, svr_port))
+    __log.debug('devs=%s, offset=%s, interval=%s, svr=%s',
+                devs, offset, interval, (svr_host, svr_port))
 
     dc_mtr = DcMtrClient(svr_host, svr_port, obj['debug'] or debug)
 
     test_app = Test_RobotTankAuto(
-        offset, interval, dc_mtr, debug=obj['debug'] or debug)
+        devs, offset, interval, dc_mtr, debug=obj['debug'] or debug)
     try:
         test_app.main()
 

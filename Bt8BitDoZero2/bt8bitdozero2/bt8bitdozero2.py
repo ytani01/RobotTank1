@@ -104,7 +104,7 @@ class Bt8BitDoZero2(threading.Thread):
                          (ev.type, ev.code, ev.value))
 
         if self.cb_func is not None:
-            self.__log.info(self.cb_func)
+            self.__log.debug(self.cb_func)
             self.cb_func(self.dev, ev.type, ev.code, ev.value)
 
         return (ev.type, ev.code, ev.value)

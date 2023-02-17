@@ -188,7 +188,8 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
 
             ## white spaces and split
             cmd = decoded_data.split()
-            self.__log.info('cmd=%s', cmd)
+            if len(cmd) > 0:
+                self.__log.info('cmd=%s', cmd)
 
             if len(cmd) == 0:
                 ## msg = 'No data .. disconnect'
@@ -202,7 +203,7 @@ class DcMtrHandler(socketserver.StreamRequestHandler):
 
             self._svr._mtr_worker.send(cmd)
 
-        self.__log.info('done')
+        self.__log.debug('done')
 
 
 class DcMtrServer(socketserver.ThreadingTCPServer):

@@ -9,4 +9,6 @@ $ROBOTDIR/start_server.sh &
 sleep 2
 
 #exec $ROBOTDIR/start_kbd.sh
-exec $ROBOTDIR/start_bt8bitdozero2.sh
+$ROBOTDIR/start_bt8bitdozero2.sh &
+
+$ROBOTDIR/start_auto.sh &
