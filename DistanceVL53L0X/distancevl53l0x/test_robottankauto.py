@@ -82,11 +82,13 @@ class SensorWatcher(threading.Thread):
                 self._dc_mtr.send_cmdline('delay 0.1')
                 self._dc_mtr.send_cmdline('speed -60 -60')
                 self._dc_mtr.send_cmdline('delay 0.5')
+
                 if random.random() > 0.5:
                     self._dc_mtr.send_cmdline('speed 60 0')
                 else:
                     self._dc_mtr.send_cmdline('speed 0 60')
-                self._dc_mtr.send_cmdline('delay %s' % (1 + random.random()))
+
+                self._dc_mtr.send_cmdline('delay %s' % (0.5 + random.random()))
 
                 time.sleep(1.5)
 
@@ -99,7 +101,7 @@ class Test_RobotTankAuto:
     """ Test RobotTankAuto class """
 
     SPEED_MAX = 100
-    DEF_BASE_SPEED = 60
+    DEF_BASE_SPEED = 70
 
     def __init__(self, interval=1, dc_mtr=None, debug=False):
         self._dbg = debug
@@ -134,11 +136,13 @@ class Test_RobotTankAuto:
                 cmdline = 'speed 0 0'
 
                 if self._dir == Direction.LEFT:
-                    cmdline = 'speed 0 %s' % (self._base_speed)
+                    cmdline = 'speed %s %s' % (
+                        int(self._base_speed / 4), self._base_speed)
                     self._dir = Direction.RIGHT
 
                 else:
-                    cmdline = 'speed %s 0' % (self._base_speed)
+                    cmdline = 'speed %s %s' % (
+                        self._base_speed, int(self._base_speed / 4))
                     self._dir = Direction.LEFT
 
                 self._dc_mtr.send_cmdline(cmdline)
