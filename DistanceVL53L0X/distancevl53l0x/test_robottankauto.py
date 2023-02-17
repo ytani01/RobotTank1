@@ -122,7 +122,7 @@ class Test_RobotTankAuto:
     """ Test RobotTankAuto class """
 
     SPEED_MAX = 100
-    DEF_BASE_SPEED = 70
+    DEF_BASE_SPEED = 65
 
     def __init__(self, devs=[], offset=0.0, interval=0.0, dc_mtr=None,
                  debug=False):
@@ -223,7 +223,7 @@ class Test_RobotTankAuto:
 
                 self._dc_mtr.send_cmdline(cmdline)
 
-                time.sleep(0.5 + random.random())
+                time.sleep(0.7 + random.random())
 
         except KeyboardInterrupt as e:
             self.__log.warning('%s:%s', type(e).__name__, e)
