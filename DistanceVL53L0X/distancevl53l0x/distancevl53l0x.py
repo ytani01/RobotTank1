@@ -22,21 +22,23 @@ class DistanceVL53L0X(threading.Thread):
 
     DISTANCE_MAX = 8190
 
-    def __init__(self,
+    def __init__(self, offset=0.0,
                  i2c_bus=DEF_I2C_BUS, i2c_addr=DEF_I2C_ADDR,
                  mode=Vl53l0xAccuracyMode.LONG_RANGE,
                  debug=False):
         """
         Parameters
         ----------
+        offset: float
         i2c_bus: int
         i2c_addr: int
         mode: Vl3l0xAccuracyMode
         """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
-        self.__log.debug('i2c: %d, 0x%X', i2c_bus, i2c_addr)
+        self.__log.debug('offset=%s, i2c:%d, 0x%X', offset, i2c_bus, i2c_addr)
 
+        self._offset = offset
         self._i2c_bus = i2c_bus
         self._i2c_addr = i2c_addr
         self._mode = mode
@@ -88,10 +90,14 @@ class DistanceVL53L0X(threading.Thread):
 
             time.sleep(0.1)
 
+        self.__log.debug('Done: timelimit=%s', timelimit)
         return delay
 
     def get_distance(self):
-        """
+        """ get_distance
+        Returns
+        -------
+        distance: float
         """
         if not self._active:
             self.__log.warning('active=%s', self._active)
@@ -109,7 +115,7 @@ class DistanceVL53L0X(threading.Thread):
 
         while self._active:
             try:
-                self._distance = self._tof.get_distance()
+                self._distance = max(self._tof.get_distance() + self._offset, 0)
                 time.sleep(self._timing / 1000000.0)
 
             except Exception as e:

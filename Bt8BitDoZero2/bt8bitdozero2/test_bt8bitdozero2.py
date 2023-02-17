@@ -21,26 +21,15 @@ class Test_Bt8BitDoZero2:
 
         self._devs = devs
 
-        self._bt8bitdozero2 = []
-        for d in self._devs:
-            bt8bitdozero2 = None
-            while bt8bitdozero2 is None:
-                try:
-                    bt8bitdozero2 = Bt8BitDoZero2(
-                        d, self.cb_func, debug=self._dbg)
-                except Exception as e:
-                    self.__log.error('%s:%s', type(e).__name__, e)
-                    time.sleep(2)
-                else:
-                    self.__log.info('Connected: %s', d)
-
-            self._bt8bitdozero2.append(bt8bitdozero2)
+        self._bt8bitdozero2 = Bt8BitDoZero2.get_bt8bitdozero2(
+            self._devs, self.cb_func, self._dbg)
+        self.__log.debug('bt8bitdozero2=%s', self._bt8bitdozero2)
 
     def main(self):
         self.__log.debug('')
 
-        for bt8bitdozero2 in self._bt8bitdozero2:
-            bt8bitdozero2.start()
+        for b in self._bt8bitdozero2:
+            b.start()
 
         while True:
             print(time.strftime('%Y/%m/%d(%a) %H:%M:%S'))
@@ -49,7 +38,7 @@ class Test_Bt8BitDoZero2:
     def cb_func(self, dev, evtype, code, value):
         """ callback function """
         self.__log.info('dev=%d, evtype=%d:%s, code=%d:%s, value=%d:%s',
-                        dev, evtype, evdev.ecodes.EV[evtype], 
+                        dev, evtype, evdev.ecodes.EV[evtype],
                         code, Bt8BitDoZero2.keycode2str(evtype, code),
                         value, Bt8BitDoZero2.keyval2str(evtype, value))
 

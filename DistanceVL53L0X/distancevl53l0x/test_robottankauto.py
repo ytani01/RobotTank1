@@ -17,6 +17,7 @@ from . import DistanceVL53L0X
 
 
 class Direction(Enum):
+    """ Direction """
     STOP = 0
     FORWARD = 1
     BACKWARD = 2
@@ -26,17 +27,25 @@ class Direction(Enum):
 
 
 class SensorWatcher(threading.Thread):
-    """   """
+    """ Sensor Watcher  """
 
     DISTANCE_MAX = 600
     DISTANCE_NEAR = 200
 
-    def __init__(self, dc_mtr, sensor, debug=False):
+    def __init__(self, dc_mtr, base_speed, sensor, debug=False):
+        """
+        Parameters
+        ----------
+        dc_mtr: DcMtrClient
+        base_speed: int
+        sensor: DistanceVL53L0X
+        """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
-        self.__log.debug('')
+        self.__log.debug('base_speed=%s', base_speed)
 
         self._dc_mtr = dc_mtr
+        self._base_speed = base_speed
         self._sensor = sensor
 
         self._active = False
@@ -76,17 +85,22 @@ class SensorWatcher(threading.Thread):
 
             self.__log.info('distance=%s', distance)
 
-            if distance <= self.DISTANCE_NEAR:
+            if distance < self.DISTANCE_NEAR or distance > self.DISTANCE_MAX:
+                self.__log.info('distance=%s !!', distance)
+
                 self._dc_mtr.send_cmdline('clear')
+
                 self._dc_mtr.send_cmdline('speed 0 0')
                 self._dc_mtr.send_cmdline('delay 0.1')
-                self._dc_mtr.send_cmdline('speed -60 -60')
-                self._dc_mtr.send_cmdline('delay 0.5')
+
+                self._dc_mtr.send_cmdline('speed %s %s' % (
+                    -self._base_speed, -self._base_speed))
+                self._dc_mtr.send_cmdline('delay %s' % (0.2 + random.random()))
 
                 if random.random() > 0.5:
-                    self._dc_mtr.send_cmdline('speed 60 0')
+                    self._dc_mtr.send_cmdline('speed %s 0' % (self._base_speed))
                 else:
-                    self._dc_mtr.send_cmdline('speed 0 60')
+                    self._dc_mtr.send_cmdline('speed 0 %s' % (self._base_speed))
 
                 self._dc_mtr.send_cmdline('delay %s' % (0.5 + random.random()))
 
@@ -103,21 +117,29 @@ class Test_RobotTankAuto:
     SPEED_MAX = 100
     DEF_BASE_SPEED = 70
 
-    def __init__(self, interval=1, dc_mtr=None, debug=False):
+    def __init__(self, offset=0.0, interval=0.0, dc_mtr=None, debug=False):
+        """
+        Parameters
+        ----------
+        offset: float
+        interval: float
+        dc_mtr: DcMtrclient
+        """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
-        self.__log.debug('interval=%s', interval)
+        self.__log.debug('offset=%s, interval=%s', offset, interval)
 
+        self._offset = offset
         self._interval = interval
         self._dc_mtr = dc_mtr
 
-        self._sensor = DistanceVL53L0X(debug=self._dbg)
-
-        self._watcher = SensorWatcher(
-            self._dc_mtr, self._sensor, debug=self._dbg)
-
         self._dir = Direction.LEFT
         self._base_speed = self.DEF_BASE_SPEED
+
+        self._sensor = DistanceVL53L0X(offset=self._offset, debug=self._dbg)
+
+        self._watcher = SensorWatcher(
+            self._dc_mtr, self._base_speed, self._sensor, debug=self._dbg)
 
     def main(self):
         self.__log.debug('')
@@ -160,7 +182,10 @@ class Test_RobotTankAuto:
 
 
 @click.command(help="Robot Tank Auto Pilot Test")
-@click.argument('interval', metavar='interval[sec]', type=float)
+@click.option('--offset', '-o', 'offset', type=float, default=0.0,
+              help='distance sensor offset (mm)')
+@click.option('--interval', '-i', 'interval', type=float, default=0.0,
+              help='interval sec')
 @click.option('--svr_host', '-s', 'svr_host', type=str, default='localhost',
               help='server hostname')
 @click.option('--svr_port', '-p', 'svr_port', type=int, default=12345,
@@ -168,16 +193,17 @@ class Test_RobotTankAuto:
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def robottankauto(obj, interval, svr_host, svr_port, debug):
+def robottankauto(obj, offset, interval, svr_host, svr_port, debug):
     """ robottankauto """
     __log = get_logger(__name__, obj['debug'] or debug)
-    __log.debug('obj=%s, interval=%s, svr=%s',
-                obj, interval, (svr_host, svr_port))
+    __log.debug('obj=%s', obj)
+    __log.debug('offset=%s, interval=%s, svr=%s',
+                offset, interval, (svr_host, svr_port))
 
     dc_mtr = DcMtrClient(svr_host, svr_port, obj['debug'] or debug)
-    test_app = Test_RobotTankAuto(
-        interval, dc_mtr, debug=obj['debug'] or debug)
 
+    test_app = Test_RobotTankAuto(
+        offset, interval, dc_mtr, debug=obj['debug'] or debug)
     try:
         test_app.main()
 

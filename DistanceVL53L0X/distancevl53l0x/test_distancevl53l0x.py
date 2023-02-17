@@ -16,14 +16,16 @@ class Test_DistanceVL53L0X:
 
     DISTANCE_MAX = 500
 
-    def __init__(self, interval=1, debug=False):
+    def __init__(self, offset=0.0, interval=0.0, debug=False):
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.__log.debug('interval=%s', interval)
 
+        self._offset = offset
         self._interval = interval
 
-        self._distancevl53l0x = DistanceVL53L0X(debug=self._dbg)
+        self._distancevl53l0x = DistanceVL53L0X(
+            offset=self._offset, debug=self._dbg)
 
     def main(self):
         self.__log.debug('')
@@ -62,16 +64,18 @@ class Test_DistanceVL53L0X:
 
 
 @click.command(help="VL53L0X Distance Sensor Test")
-@click.argument('interval', metavar='interval[sec]', type=float)
+@click.option('--offset', '-o', 'offset', type=float, default=0.0)
+@click.option('--interval', '-i', '-s', 'interval', type=float, default=0.0)
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def distance(obj, interval, debug):
+def distance(obj, offset, interval, debug):
     """ distancevl53l0x """
     __log = get_logger(__name__, obj['debug'] or debug)
-    __log.debug('obj=%s, interval=%s', obj, interval)
+    __log.debug('obj=%s', obj)
+    __log.debug('offset=%s, interval=%s', offset, interval)
 
-    test_app = Test_DistanceVL53L0X(interval, debug=obj['debug'] or debug)
+    test_app = Test_DistanceVL53L0X(offset, interval, debug=obj['debug'] or debug)
 
     try:
         test_app.main()

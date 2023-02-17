@@ -27,7 +27,7 @@ class Bt8BitDoZero2(threading.Thread):
         'TR': [3, 311],
         'SEL': [1, 314],
         'ST': [1, 315]
-        }
+    }
 
     def __init__(self, dev=0, cb_func=None, debug=False):
         """
@@ -104,6 +104,25 @@ class Bt8BitDoZero2(threading.Thread):
                              evdev.ecodes.EV[evtype], evtype,
                              __class__.keycode2str(evtype, code), code,
                              __class__.keyval2str(evtype, value), value)
+
+    @classmethod
+    def get_bt8bitdozero2(cls, devs, cb_func, debug=False):
+        bt8bitdozero2 = []
+        for d in devs:
+            b = None
+            while b is None:
+                try:
+                    b = Bt8BitDoZero2(
+                        d, cb_func, debug=debug)
+                except Exception as e:
+                    cls.__log.error('%s:%s', type(e).__name__, e)
+                    time.sleep(2)
+                else:
+                    cls.__log.info('connect: %s', d)
+
+            bt8bitdozero2.append(b)
+
+        return bt8bitdozero2
 
     @classmethod
     def keycode2str(cls, evtype, code):
