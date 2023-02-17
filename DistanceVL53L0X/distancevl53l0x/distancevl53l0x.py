@@ -115,12 +115,14 @@ class DistanceVL53L0X(threading.Thread):
 
         while self._active:
             try:
-                self._distance = max(self._tof.get_distance() + self._offset, 0)
-                time.sleep(self._timing / 1000000.0)
+                self._distance = max(
+                    0, self._tof.get_distance() + self._offset)
 
             except Exception as e:
                 self.__log.error('%s:%s', type(e).__name__, e)
                 self._active = False
                 break
+
+            time.sleep(self._timing / 1000000.0)
 
         self._end()
