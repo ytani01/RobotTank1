@@ -72,10 +72,6 @@ class SensorWatcher(threading.Thread):
         self._active = True
 
         while self._active:
-            if not self._auto:
-                time.sleep(1)
-                continue
-
             distance = self._sensor.get_distance()
             if distance is None:
                 self._dc_mtr.send_cmdline('clear')
@@ -83,7 +79,16 @@ class SensorWatcher(threading.Thread):
                 time.sleep(1)
                 continue
 
-            self.__log.info('distance=%s', distance)
+            if distance == DistanceVL53L0X.DISTANCE_MAX:
+                self.__log.warning('distance=%s??', distance)
+                time.sleep(0.5)
+                continue
+            else:
+                self.__log.debug('distance=%s', distance)
+
+            if not self._auto:
+                time.sleep(.5)
+                continue
 
             if distance < self.DISTANCE_NEAR or distance > self.DISTANCE_MAX:
                 self.__log.info('distance=%s !!', distance)
@@ -91,18 +96,20 @@ class SensorWatcher(threading.Thread):
                 self._dc_mtr.send_cmdline('clear')
 
                 self._dc_mtr.send_cmdline('speed 0 0')
-                self._dc_mtr.send_cmdline('delay 0.1')
+                self._dc_mtr.send_cmdline('delay 0.2')
 
                 self._dc_mtr.send_cmdline('speed %s %s' % (
                     -self._base_speed, -self._base_speed))
-                self._dc_mtr.send_cmdline('delay %s' % (0.2 + random.random()))
+                self._dc_mtr.send_cmdline('delay %s' % (
+                    0.6 + random.random() / 2))
 
-                if random.random() > 0.5:
+                if random.random() >= 0.5:
                     self._dc_mtr.send_cmdline('speed %s 0' % (self._base_speed))
                 else:
                     self._dc_mtr.send_cmdline('speed 0 %s' % (self._base_speed))
 
-                self._dc_mtr.send_cmdline('delay %s' % (0.5 + random.random()))
+                self._dc_mtr.send_cmdline('delay %s' % (
+                    0.8 + random.random() / 2))
 
                 time.sleep(1.5)
 
@@ -161,6 +168,8 @@ class Test_RobotTankAuto:
                         dev, evtype, code, code_str, val, val_str)
 
         if [evtype, code] == Bt8BitDoZero2.BTN['SEL'] and val_str == 'PUSH':
+            self._dc_mtr.send_cmdline('clear')
+            self._dc_mtr.send_cmdline('speed 0 0')
             self.toggle_auto()
 
     def toggle_auto(self):
