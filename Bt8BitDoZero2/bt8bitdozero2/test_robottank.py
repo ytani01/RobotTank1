@@ -7,7 +7,7 @@ import click
 import time
 from dcmtr import DcMtrClient
 from .my_logger import get_logger
-from . import Bt8BitDoZero2
+from . import Bt8BitDoZero2, Bt8BitDoZero2N
 
 
 class Test_RobotTank:
@@ -29,20 +29,8 @@ class Test_RobotTank:
         self._devs = devs
         self._dc_mtr = dc_mtr
 
-        self._bt8bitdozero2 = []
-        for d in self._devs:
-            bt8bitdozero2 = None
-            while bt8bitdozero2 is None:
-                try:
-                    bt8bitdozero2 = Bt8BitDoZero2(
-                        d, self.cb_func, debug=self._dbg)
-                except Exception as e:
-                    self.__log.error('%s:%s', type(e).__name__, e)
-                    time.sleep(2)
-                else:
-                    self.__log.info('connect: %s', d)
-
-            self._bt8bitdozero2.append(bt8bitdozero2)
+        self._bt8bitdozero2 = Bt8BitDoZero2N(
+            self._devs, self.cb_func, debug=self._dbg)
 
         self._speed = [0, 0]
         self._base_speed = [self.DEF_BASES_SPEED, self.DEF_BASES_SPEED]
@@ -52,8 +40,7 @@ class Test_RobotTank:
     def main(self):
         self.__log.debug('')
 
-        for bt8bitdozero2 in self._bt8bitdozero2:
-            bt8bitdozero2.start()
+        self._bt8bitdozero2.start()
 
         while True:
             self.__log.debug(time.strftime('%Y/%m/%d(%a) %H:%M:%S'))
@@ -74,6 +61,7 @@ class Test_RobotTank:
 
     def cb_func(self, dev, evtype, code, val):
         """ callback function """
+        self.__log.debug('')
 
         # !! code_strがlistのこともある !!
         code_str = Bt8BitDoZero2.keycode2str(evtype, code)

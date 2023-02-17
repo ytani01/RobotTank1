@@ -10,6 +10,43 @@ import threading
 from .my_logger import get_logger
 
 
+class Bt8BitDoZero2N:
+    """  """
+    def __init__(self, devs=[], cb_func=None, debug=False):
+        """
+        Parameters
+        ----------
+        devs: list(Bt8BitDoZero2)
+        cb_func: lambda()
+        """
+        self._dbg = debug
+        __class__.__log = get_logger(__class__.__name__, self._dbg)
+        self.__log.debug('devs=%s', devs)
+
+        self._devs = devs
+        self._cb_func = cb_func
+
+        self._bt8bitdozero2 = []
+
+    def start(self):
+        for d in self._devs:
+            b = None
+            while b is None:
+                try:
+                    b = Bt8BitDoZero2(
+                        d, self._cb_func, debug=self._dbg)
+                except Exception as e:
+                    self.__log.error('%s:%s', type(e).__name__, e)
+                    time.sleep(2)
+                else:
+                    self.__log.info('connect: %s', d)
+
+            self._bt8bitdozero2.append(b)
+
+        for b in self._bt8bitdozero2:
+            b.start()
+
+
 class Bt8BitDoZero2(threading.Thread):
     DEVFILE_PREFIX = '/dev/input/event'
 
@@ -67,6 +104,7 @@ class Bt8BitDoZero2(threading.Thread):
                          (ev.type, ev.code, ev.value))
 
         if self.cb_func is not None:
+            self.__log.info(self.cb_func)
             self.cb_func(self.dev, ev.type, ev.code, ev.value)
 
         return (ev.type, ev.code, ev.value)
@@ -104,25 +142,6 @@ class Bt8BitDoZero2(threading.Thread):
                              evdev.ecodes.EV[evtype], evtype,
                              __class__.keycode2str(evtype, code), code,
                              __class__.keyval2str(evtype, value), value)
-
-    @classmethod
-    def get_bt8bitdozero2(cls, devs, cb_func, debug=False):
-        bt8bitdozero2 = []
-        for d in devs:
-            b = None
-            while b is None:
-                try:
-                    b = Bt8BitDoZero2(
-                        d, cb_func, debug=debug)
-                except Exception as e:
-                    cls.__log.error('%s:%s', type(e).__name__, e)
-                    time.sleep(2)
-                else:
-                    cls.__log.info('connect: %s', d)
-
-            bt8bitdozero2.append(b)
-
-        return bt8bitdozero2
 
     @classmethod
     def keycode2str(cls, evtype, code):
