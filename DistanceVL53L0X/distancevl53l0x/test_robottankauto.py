@@ -30,6 +30,7 @@ class SensorWatcher(threading.Thread):
     """ Sensor Watcher  """
 
     DISTANCE_NEAR = 140
+    DISTANCE_TOO_NEAR = 50
     DISTANCE_FAR = 600
 
     def __init__(self, dc_mtr, base_speed, sensor, debug=False):
@@ -60,6 +61,15 @@ class SensorWatcher(threading.Thread):
         self.join()
         self.__log.debug('END')
 
+    def is_auto(self):
+        return self._auto
+
+    def toggle_auto(self):
+        if self._auto:
+            self.auto_off()
+        else:
+            self.auto_on()
+
     def auto_on(self):
         self._auto = True
 
@@ -71,7 +81,11 @@ class SensorWatcher(threading.Thread):
 
         self._active = True
 
+        near_count = 0
+
         while self._active:
+            speed = self._base_speed
+
             distance = self._sensor.get_distance()
             if distance is None:
                 self._dc_mtr.send_cmdline('clear')
@@ -86,12 +100,13 @@ class SensorWatcher(threading.Thread):
             else:
                 self.__log.debug('distance=%s', distance)
 
-            if not self._auto:
+            if not self.is_auto():
                 time.sleep(.5)
                 continue
 
             if distance < self.DISTANCE_NEAR or distance > self.DISTANCE_FAR:
-                self.__log.info('distance=%s !!', distance)
+                self.__log.info('near_count=%s, distance=%s !!',
+                                near_count, distance)
 
                 self._dc_mtr.send_cmdline('clear')
 
@@ -100,23 +115,35 @@ class SensorWatcher(threading.Thread):
                 delay1 = 0.2
                 self._dc_mtr.send_cmdline('delay %s' % (delay1))
 
+                if near_count == 0:
+                    near_count += 1
+                    time.sleep(delay1)
+                    continue
+
+                near_count = 0
+
                 # back
-                self._dc_mtr.send_cmdline('speed %s %s' % (
-                    -self._base_speed, -self._base_speed))
-                delay2 = 0.6 + random.random() / 2
+                self._dc_mtr.send_cmdline(
+                    'speed %s %s' % (-speed, -speed))
+
+                delay2 = 0.4 + random.random() / 2
                 self._dc_mtr.send_cmdline('delay %s' % (delay2))
 
-                # rotate
-                if random.random() >= 0.5:
-                    self._dc_mtr.send_cmdline('speed %s 0' % (self._base_speed))
+                # turn
+                turn_speed = int(speed / 2)
+                if random.random() >= 0.2:
+                    self._dc_mtr.send_cmdline(
+                        'speed %s %s' % (turn_speed, -turn_speed))
                 else:
-                    self._dc_mtr.send_cmdline('speed 0 %s' % (self._base_speed))
+                    self._dc_mtr.send_cmdline(
+                        'speed %s %s' % (-turn_speed, turn_speed))
 
-                delay3 = 1 + random.random()
+                delay3 = 0.1 + random.random()
                 self._dc_mtr.send_cmdline('delay %s' % (delay3))
 
                 time.sleep(delay1 + delay2)
 
+            near_count = 0
             time.sleep(self._sensor.get_timing())
 
         self._sensor.end()
@@ -126,7 +153,7 @@ class Test_RobotTankAuto:
     """ Test RobotTankAuto class """
 
     SPEED_MAX = 100
-    DEF_BASE_SPEED = 65
+    DEF_BASE_SPEED = 80
 
     def __init__(self, devs=[], offset=0.0, interval=0.0, dc_mtr=None,
                  debug=False):
@@ -171,16 +198,24 @@ class Test_RobotTankAuto:
         self.__log.info('dev=%d, evtype=%d, code=%d:%s, val=%d:%s',
                         dev, evtype, code, code_str, val, val_str)
 
-        if [evtype, code] == Bt8BitDoZero2.BTN['SEL'] and val_str == 'PUSH':
+        if val_str == 'RELEASE':
+            return
+
+        # val_str != 'RELEASE': ###
+
+        if self.is_auto():
+            self.auto_off()
+            return
+
+        # AUTO: OFF
+
+        if Bt8BitDoZero2.pushed('SEL', evtype, code, val):
             self._dc_mtr.send_cmdline('clear')
             self._dc_mtr.send_cmdline('speed 0 0')
-            self.toggle_auto()
-
-    def toggle_auto(self):
-        if self._auto:
-            self.auto_off()
-        else:
             self.auto_on()
+
+    def is_auto(self):
+        return self._auto
 
     def auto_on(self):
         self.__log.info('')
@@ -208,7 +243,7 @@ class Test_RobotTankAuto:
 
         try:
             while True:
-                if not self._auto:
+                if not self.is_auto():
                     self.__log.debug('auto=%s', self._auto)
                     time.sleep(1)
                     continue

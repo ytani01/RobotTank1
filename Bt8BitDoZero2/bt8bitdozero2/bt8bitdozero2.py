@@ -153,3 +153,13 @@ class Bt8BitDoZero2(threading.Thread):
             return cls.EV_ABS_VAL[int(value/127)]
 
         return cls.EV_KEY_VAL[value]
+
+    @classmethod
+    def pushed(cls, btn_name, evtype, code, val):
+        if cls.keyval2str(evtype, val) != 'PUSH':
+            return False
+
+        if [evtype, code] == cls.BTN[btn_name]:
+            return True
+
+        return False

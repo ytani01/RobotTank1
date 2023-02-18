@@ -75,10 +75,15 @@ class DcMtrClient:
 
         try:
             self._tn = telnetlib.Telnet(self._svr_host, self._svr_port)
+        except Exception as e:
+            self.__log.error('%s:%s', type(e).__name__, e)
+            return cmdline
+
+        try:
             self._tn.write(cmdline.encode('utf-8'))
             time.sleep(0.01)
-            self._tn.close()
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
 
+        self._tn.close()
         return cmdline
