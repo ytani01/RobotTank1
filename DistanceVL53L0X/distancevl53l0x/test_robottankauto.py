@@ -29,8 +29,8 @@ class Direction(Enum):
 class SensorWatcher(threading.Thread):
     """ Sensor Watcher  """
 
-    DISTANCE_MAX = 600
-    DISTANCE_NEAR = 200
+    DISTANCE_NEAR = 140
+    DISTANCE_FAR = 600
 
     def __init__(self, dc_mtr, base_speed, sensor, debug=False):
         """
@@ -90,28 +90,32 @@ class SensorWatcher(threading.Thread):
                 time.sleep(.5)
                 continue
 
-            if distance < self.DISTANCE_NEAR or distance > self.DISTANCE_MAX:
+            if distance < self.DISTANCE_NEAR or distance > self.DISTANCE_FAR:
                 self.__log.info('distance=%s !!', distance)
 
                 self._dc_mtr.send_cmdline('clear')
 
+                # stop
                 self._dc_mtr.send_cmdline('speed 0 0')
-                self._dc_mtr.send_cmdline('delay 0.2')
+                delay1 = 0.2
+                self._dc_mtr.send_cmdline('delay %s' % (delay1))
 
+                # back
                 self._dc_mtr.send_cmdline('speed %s %s' % (
                     -self._base_speed, -self._base_speed))
-                self._dc_mtr.send_cmdline('delay %s' % (
-                    0.6 + random.random() / 2))
+                delay2 = 0.6 + random.random() / 2
+                self._dc_mtr.send_cmdline('delay %s' % (delay2))
 
+                # rotate
                 if random.random() >= 0.5:
                     self._dc_mtr.send_cmdline('speed %s 0' % (self._base_speed))
                 else:
                     self._dc_mtr.send_cmdline('speed 0 %s' % (self._base_speed))
 
-                self._dc_mtr.send_cmdline('delay %s' % (
-                    0.8 + random.random() / 2))
+                delay3 = 1 + random.random()
+                self._dc_mtr.send_cmdline('delay %s' % (delay3))
 
-                time.sleep(1.5)
+                time.sleep(delay1 + delay2)
 
             time.sleep(self._sensor.get_timing())
 
@@ -223,7 +227,7 @@ class Test_RobotTankAuto:
 
                 self._dc_mtr.send_cmdline(cmdline)
 
-                time.sleep(0.7 + random.random())
+                time.sleep(.7 + random.random())
 
         except KeyboardInterrupt as e:
             self.__log.warning('%s:%s', type(e).__name__, e)
