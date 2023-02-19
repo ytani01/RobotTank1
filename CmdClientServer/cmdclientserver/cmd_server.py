@@ -7,7 +7,7 @@ import socketserver
 from .my_logger import get_logger
 
 
-class TcpHandler(socketserver.StreamRequestHandler):
+class CmdHandler(socketserver.StreamRequestHandler):
     """ handler """
 
     def __init__(self, req, client_addr, svr):
@@ -22,18 +22,12 @@ class TcpHandler(socketserver.StreamRequestHandler):
 
         super().__init__(self._req, self._client_addr, self._svr)
 
-    def setup(self):
-        self.__log.debug('')
-        return super().setup()
-
     def net_recv(self):
         """
         Returns
         -------
         decoded_str: str
         """
-        self.__log.debug('')
-
         # recieve data
         try:
             data = self.rfile.readline().strip()
@@ -62,16 +56,12 @@ class TcpHandler(socketserver.StreamRequestHandler):
         self.__log.debug('msg=%s.', msg)
 
         data = (msg + '\n').encode('utf-8')
-
         try:
             self.wfile.write(data)
         except BrokenPipeError as e:
             self.__log.debug('%s:%s', type(e).__name__, e)
         except Exception as e:
             self.__log.warning('%s:%s', type(e).__name__, e)
-
-    def exec_cmd(self, args):
-        self._svr._cmd[args[0]](args)
 
     def handle(self):
         # recv_data
@@ -92,13 +82,13 @@ class TcpHandler(socketserver.StreamRequestHandler):
 
         # exec cmd
         reply_str = self._svr._cmd[args[0]](args)
-        self.__log.debug('reply_str=%s', reply_str)
+        self.__log.info('reply_str=%s', reply_str)
 
         # send reply
         self.net_send(reply_str)
 
 
-class TcpServer(socketserver.ThreadingTCPServer):
+class CmdServer(socketserver.ThreadingTCPServer):
     """ TCP server """
 
     DEF_PORT = 54321
@@ -117,12 +107,11 @@ class TcpServer(socketserver.ThreadingTCPServer):
 
         self._cmd = {}
         self.add_cmd('HELLO', self.cmd_hello)
-        self.add_cmd('ECHO', self.cmd_echo)
 
         try:
-            super().__init__(('', self._port), TcpHandler)
+            super().__init__(('', self._port), CmdHandler)
         except Exception as e:
-            self.__log.warning('%s:%s', type(e).__name__, e)
+            self.__log.error('%s:%s', type(e).__name__, e)
             return None
 
     def add_cmd(self, cmd_name, func):
@@ -133,7 +122,7 @@ class TcpServer(socketserver.ThreadingTCPServer):
         func: lambda list(str)
         """
         self._cmd[cmd_name] = func
-        self.__log.debug('cmd=%s', self._cmd)
+        self.__log.debug('cmd={%a: %s}', cmd_name, func.__name__)
 
     def cmd_hello(self, args):
         """
@@ -145,14 +134,3 @@ class TcpServer(socketserver.ThreadingTCPServer):
         """
         self.__log.debug('args=%s', args)
         return 'OK HELLO'
-
-    def cmd_echo(self, args):
-        """
-        sample cmd function
-
-        Parameters
-        ----------
-        args: list(str)
-        """
-        self.__log.debug('args=%s', args)
-        return 'OK ' + ' '.join(args)

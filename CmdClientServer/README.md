@@ -1,6 +1,6 @@
-# TcpClientServer
+# CmdClientServer
 
-TCP Client Server Package
+Command Client Server Package
 
 ## Install
 

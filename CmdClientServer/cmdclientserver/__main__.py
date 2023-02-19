@@ -3,12 +3,12 @@
 #
 import click
 from . import __prog_name__, __version__, __author__
-from . import get_logger, distance, server, client, robottankauto
+from . import get_logger, cmdserver
 
 
 @click.group(invoke_without_command=True,
              context_settings=dict(help_option_names=['-h', '--help']),
-             help="Distance Sensor VL53L0X Package")
+             help="Cmd Client Server Package")
 @click.option('--opt0', '-o0', 'opt0', type=str, default=None, help='opt1')
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
@@ -28,7 +28,7 @@ def cli(ctx, opt0, debug):
         print(ctx.get_help())
 
 
-cli.add_command(server)
+cli.add_command(cmdserver)
 
 
 if __name__ == '__main__':
