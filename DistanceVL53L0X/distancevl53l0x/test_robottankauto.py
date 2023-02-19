@@ -178,6 +178,7 @@ class Test_RobotTankAuto:
         self._dir = Direction.LEFT
         self._base_speed = self.DEF_BASE_SPEED
         self._auto = False
+        self._prev_auto = False
 
         self._sensor = DistanceVL53L0X(offset=self._offset, debug=self._dbg)
 
