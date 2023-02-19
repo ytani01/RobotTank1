@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Yoichi Tanibayashi
 #
 __prog_name__ = 'cmdclientserver'
-__version__ = '0.0.2'
+__version__ = '0.0.1'
 __author__ = 'Yoichi Tanibayashi'
 
 from .cmd_server import CmdServer
