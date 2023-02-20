@@ -7,6 +7,7 @@ __author__ = 'Yoichi Tanibayashi'
 
 from .distancevl53l0x import DistanceVL53L0X
 from .distance_server import distanceserver
+from .distance_client import DistanceClient
 from .vl53l0x_server import Vl53l0xServer
 from .vl53l0x_client import Vl53l0xClient
 from .test_distancevl53l0x import distance
@@ -19,6 +20,7 @@ from .my_logger import get_logger
 all = [__prog_name__, __version__, __author__,
        'DistanceVL53L0X',
        'distanceserver',
+       'DistanceClient',
        'Vl53l0xServer',
        'Vl53l0xClient',
        'distance',

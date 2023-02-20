@@ -48,7 +48,7 @@ class CmdServerApp:
         return 'OK %s' % (distance)
 
 
-@click.command(help="Sample Cmd Server")
+@click.command(help="Distance Server")
 @click.option('--offset', '-o', 'offset', type=float, default=0.0,
               help='sensor offset')
 @click.option('--port', '-p', 'port', type=int, default=12347,

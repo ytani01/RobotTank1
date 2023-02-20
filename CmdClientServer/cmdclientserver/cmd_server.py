@@ -70,7 +70,7 @@ class CmdHandler(socketserver.StreamRequestHandler):
         # split: "A B C" --> ['A', 'B', 'C']
         args = decoded_str.split()
         if len(args) > 0:
-            self.__log.info('args=%s', args)
+            self.__log.debug('args=%s', args)
         else:
             self.net_send('NG NO_CMD')
             return
@@ -82,10 +82,12 @@ class CmdHandler(socketserver.StreamRequestHandler):
 
         # exec cmd
         reply_str = self._svr._cmd[args[0]](args)
-        self.__log.info('reply_str=%s', reply_str)
+        self.__log.debug('reply_str=%s', reply_str)
 
         # send reply
         self.net_send(reply_str)
+
+        # self.__log.info('%s %s', args, reply_str)
 
 
 class CmdServer(socketserver.ThreadingTCPServer):

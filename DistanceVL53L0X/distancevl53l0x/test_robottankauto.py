@@ -29,7 +29,7 @@ class Direction(Enum):
 class SensorWatcher(threading.Thread):
     """ Sensor Watcher  """
 
-    DISTANCE_NEAR = 140
+    DISTANCE_NEAR = 130
     DISTANCE_TOO_NEAR = 50
     DISTANCE_FAR = 600
 

@@ -12,7 +12,7 @@ import threading
 from enum import Enum
 from dcmtr import DcMtrClient
 from bt8bitdozero2 import Bt8BitDoZero2, Bt8BitDoZero2N
-from cmdclientserver import CmdClient
+from . import DistanceClient
 from .my_logger import get_logger
 
 
@@ -29,7 +29,7 @@ class Direction(Enum):
 class SensorWatcher(threading.Thread):
     """ Sensor Watcher  """
 
-    DISTANCE_NEAR = 140
+    DISTANCE_NEAR = 130
     DISTANCE_TOO_NEAR = 50
     DISTANCE_FAR = 600
     DISTANCE_MAX = 8190
@@ -40,7 +40,7 @@ class SensorWatcher(threading.Thread):
         ----------
         dc_mtr: DcMtrClient
         base_speed: int
-        distance_client: CmdClient
+        distance_client: DistanceClient
         """
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
@@ -48,7 +48,7 @@ class SensorWatcher(threading.Thread):
 
         self._dc_mtr = dc_mtr
         self._base_speed = base_speed
-        self._dc = distance_client
+        self._d_clnt = distance_client
 
         self._active = False
 
@@ -87,8 +87,14 @@ class SensorWatcher(threading.Thread):
         while self._active:
             speed = self._base_speed
 
-            distance = float(self._dc.call('GET_DISTANCE').split()[1])
+            distance = self._d_clnt.get_distance()
             if distance is None:
+                self._dc_mtr.send_cmdline('clear')
+                self._dc_mtr.send_cmdline('speed 0 0')
+                time.sleep(1)
+                continue
+
+            if distance < 0.0:
                 self._dc_mtr.send_cmdline('clear')
                 self._dc_mtr.send_cmdline('speed 0 0')
                 time.sleep(1)
@@ -145,7 +151,7 @@ class SensorWatcher(threading.Thread):
                 time.sleep(delay1 + delay2)
 
             near_count = 0
-            time.sleep(0.01)
+            time.sleep(0.005)
 
 
 class Test_RobotTankAuto:
@@ -163,7 +169,7 @@ class Test_RobotTankAuto:
         offset: float
         interval: float
         dc_mtr: DcMtrclient
-        distance_client: CmdClient
+        distance_client: DistanceClient
         devs: list()
         """
         self._dbg = debug
@@ -175,7 +181,7 @@ class Test_RobotTankAuto:
         self._offset = offset
         self._interval = interval
         self._dc_mtr = dc_mtr
-        self._dc = distance_client
+        self._d_clnt = distance_client
 
         self._dir = Direction.LEFT
         self._base_speed = self.DEF_BASE_SPEED
@@ -183,8 +189,7 @@ class Test_RobotTankAuto:
         self._prev_auto = False
 
         self._watcher = SensorWatcher(
-            self._dc_mtr, self._base_speed,
-            self._dc, debug=self._dbg)
+            self._dc_mtr, self._base_speed, self._d_clnt, debug=self._dbg)
 
         self._bt8bitdozero2 = Bt8BitDoZero2N(
             self._devs, self.cb, debug=self._dbg)
@@ -279,22 +284,28 @@ class Test_RobotTankAuto:
               help='distance sensor offset (mm)')
 @click.option('--interval', '-i', 'interval', type=float, default=0.0,
               help='interval sec')
-@click.option('--svr_host', '-s', 'svr_host', type=str, default='localhost',
-              help='server hostname')
-@click.option('--svr_port', '-p', 'svr_port', type=int, default=12345,
-              help='server port number')
+@click.option('--dc_host', '--dcs', 'dc_host', type=str, default='localhost',
+              help='DC Motor server hostname')
+@click.option('--dc_port', '--dcp', 'dc_port', type=int, default=12345,
+              help='DC Motor server port number')
+@click.option('--ds_host', '--dss', 'ds_host', type=str, default='localhost',
+              help='DC Motor server hostname')
+@click.option('--ds_port', '--dsp', 'ds_port', type=int, default=12347,
+              help='DC Motor server port number')
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def robottankauto2(obj, devs, offset, interval, svr_host, svr_port, debug):
+def robottankauto2(obj, devs, offset, interval,
+                   dc_host, dc_port, ds_host, ds_port, debug):
     """ robottankauto """
     __log = get_logger(__name__, obj['debug'] or debug)
     __log.debug('obj=%s', obj)
-    __log.debug('devs=%s, offset=%s, interval=%s, svr=%s',
-                devs, offset, interval, (svr_host, svr_port))
+    __log.debug('devs=%s, offset=%s, interval=%s, dc=%s, ds=%s',
+                devs, offset, interval,
+                (dc_host, dc_port), (ds_host, ds_port))
 
-    dc_mtr = DcMtrClient(svr_host, svr_port, obj['debug'] or debug)
-    distance_client = CmdClient(svr_host, 12347, obj['debug'] or debug)
+    dc_mtr = DcMtrClient(dc_host, dc_port, obj['debug'] or debug)
+    distance_client = DistanceClient(ds_host, ds_port, obj['debug'] or debug)
 
     test_app = Test_RobotTankAuto(
         devs, offset, interval, dc_mtr, distance_client,

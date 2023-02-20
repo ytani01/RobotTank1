@@ -25,7 +25,7 @@ class CmdClient:
         self._svr_port = svr_port
 
     def call(self, cmdline):
-        self.__log.info('cmdline=%a', cmdline)
+        self.__log.debug('cmdline=%a', cmdline)
 
         rep_str = ''
         try:
@@ -42,5 +42,6 @@ class CmdClient:
 
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
+            rep_str = 'NG ' + '%s:%s' % (type(e).__name__, e)
 
         return rep_str
