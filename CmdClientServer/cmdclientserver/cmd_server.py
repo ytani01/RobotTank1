@@ -3,6 +3,7 @@
 #
 # -*- coding: utf-8 -*-
 #
+import sys
 import socketserver
 from .my_logger import get_logger
 
@@ -114,7 +115,7 @@ class CmdServer(socketserver.ThreadingTCPServer):
             super().__init__(('', self._port), CmdHandler)
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
-            return None
+            sys.exit(1)
 
     def add_cmd(self, cmd_name, func):
         """

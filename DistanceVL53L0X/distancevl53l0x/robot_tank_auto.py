@@ -278,7 +278,7 @@ class Test_RobotTankAuto:
         self._watcher.end()
 
 
-@click.command(help="Robot Tank Auto Pilot Test")
+@click.command(help="Robot Tank Auto Pilot")
 @click.argument('devs', metavar='dev_num[0|1|2|4..]...', type=int, nargs=-1)
 @click.option('--offset', '-o', 'offset', type=float, default=0.0,
               help='distance sensor offset (mm)')
@@ -295,7 +295,7 @@ class Test_RobotTankAuto:
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.pass_obj
-def robottankauto2(obj, devs, offset, interval,
+def robottankauto(obj, devs, offset, interval,
                    dc_host, dc_port, ds_host, ds_port, debug):
     """ robottankauto """
     __log = get_logger(__name__, obj['debug'] or debug)

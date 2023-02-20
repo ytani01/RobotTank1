@@ -18,6 +18,11 @@ class DistanceClient:
         self._clnt = CmdClient(self._svr_host, self._svr_port, self._dbg)
 
     def get_distance(self):
+        """
+        Returns
+        -------
+        distance: float .. < 0: ERROR
+        """
         rep = self._clnt.call('GET_DISTANCE').split()
         self.__log.debug('rep=%s', rep)
 

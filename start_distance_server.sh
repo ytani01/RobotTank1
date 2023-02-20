@@ -10,7 +10,7 @@ while true; do
     . $BINDIR/activate
     echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 
-    python3 -m distancevl53l0x distanceserver
+    python3 -m distancevl53l0x server
 
     deactivate
 

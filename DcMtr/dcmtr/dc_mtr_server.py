@@ -115,9 +115,8 @@ class DcMtrWorker(threading.Thread):
                         self.__log.warning("%s .. ignore", cmd)
                         continue
 
-                    self.__log.info('delay: %s sec', cmd[1])
+                    self.__log.debug('delay: %s sec', cmd[1])
                     time.sleep(float(cmd[1]))
-                    self.__log.info('delay: %s sec: done', cmd[1])
                     continue
 
                 if cmd[0] in CMD['NULL']:

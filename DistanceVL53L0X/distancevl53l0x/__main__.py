@@ -3,8 +3,7 @@
 #
 import click
 from . import __prog_name__, __version__, __author__
-from . import get_logger, distance, distanceserver, server, client
-from . import robottankauto, robottankauto2
+from . import get_logger, distance, server, robottankauto
 
 
 @click.group(invoke_without_command=True,
@@ -30,11 +29,8 @@ def cli(ctx, opt0, debug):
 
 
 cli.add_command(distance)
-cli.add_command(distanceserver)
 cli.add_command(server)
-cli.add_command(client)
 cli.add_command(robottankauto)
-cli.add_command(robottankauto2)
 
 
 if __name__ == '__main__':

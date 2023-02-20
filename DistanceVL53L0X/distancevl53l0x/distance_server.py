@@ -56,7 +56,7 @@ class CmdServerApp:
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug option')
 @click.pass_obj
-def distanceserver(obj, offset, port, debug):
+def server(obj, offset, port, debug):
     __log = get_logger(__name__, obj['debug'] or debug)
     __log.debug('obj=%s', obj)
     __log.debug('offset=%s, port=%s', offset, port)
