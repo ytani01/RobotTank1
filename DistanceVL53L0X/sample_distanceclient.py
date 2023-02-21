@@ -36,7 +36,7 @@ def main(svr_host, svr_port, delay, debug):
     while True:
         tm = datetime.datetime.now().strftime('%H:%M:%S.%f')
         distance = dc.get_distance()
-        graph_str = '*' * int(distance / 10)
+        graph_str = '-' * int(distance / 10)
 
         print('%s: %4d %s' % (tm, distance, graph_str))
 

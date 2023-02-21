@@ -6,10 +6,10 @@ __version__ = '0.0.2'
 __author__ = 'Yoichi Tanibayashi'
 
 from .distancevl53l0x import DistanceVL53L0X
-from .distance_server import server
-from .distance_client import DistanceClient
+from .server import server
+from .client import DistanceClient
 from .test_distancevl53l0x import distance
-from .robot_tank_auto import robottankauto
+from .robottank_auto import robottankauto
 from .my_logger import get_logger
 
 all = [__prog_name__, __version__, __author__,

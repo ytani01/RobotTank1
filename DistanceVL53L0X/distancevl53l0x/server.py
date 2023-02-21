@@ -9,6 +9,9 @@ from .my_logger import get_logger
 from . import DistanceVL53L0X
 
 
+DEF_PORT = 12347
+
+
 class CmdServerApp:
     def __init__(self, offset, port, debug=False):
         self._dbg = debug
@@ -51,8 +54,8 @@ class CmdServerApp:
 @click.command(help="Distance Server")
 @click.option('--offset', '-o', 'offset', type=float, default=0.0,
               help='sensor offset')
-@click.option('--port', '-p', 'port', type=int, default=12347,
-              help='port number')
+@click.option('--port', '-p', 'port', type=int, default=DEF_PORT,
+              help='port number (default=%s)' % (DEF_PORT))
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug option')
 @click.pass_obj

@@ -21,11 +21,11 @@ class CmdClientApp:
     def main(self):
         # 1st time
         rep_str = self._clnt.call(self._cmdline)
-        self.__log.info('rep_str=%a', rep_str)
+        self.__log.info('%a>%a', self._cmdline, rep_str)
 
         # 2nd time
         rep_str = self._clnt.call(self._cmdline)
-        self.__log.info('rep_str=%a', rep_str)
+        self.__log.info('%a>%a', self._cmdline, rep_str)
 
 
 @click.command(context_settings=dict(help_option_names=['-h', '--help']),

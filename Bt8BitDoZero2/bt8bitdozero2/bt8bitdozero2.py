@@ -61,7 +61,7 @@ class Bt8BitDoZero2(threading.Thread):
         'UD': [3, 1],
         'LR': [3, 0],
         'TL': [1, 310],
-        'TR': [3, 311],
+        'TR': [1, 311],
         'SEL': [1, 314],
         'ST': [1, 315]
     }
@@ -94,11 +94,15 @@ class Bt8BitDoZero2(threading.Thread):
         """
         self.__log.debug('%s', self.input_dev_file)
 
-        for ev in self.input_dev.read_loop():
-            if ev.type in [evdev.events.EV_KEY, evdev.events.EV_ABS]:
-                break
+        try:
+            for ev in self.input_dev.read_loop():
+                if ev.type in [evdev.events.EV_KEY, evdev.events.EV_ABS]:
+                    break
 
-            self.__log.debug('ignore: %s', ev)
+                self.__log.debug('ignore: %s', ev)
+
+        except Exception as e:
+            self.__log.error('%s:%s', type(e).__name__, e)
 
         self.__log.debug('(ev.type, ev.code, ev.value)=%s',
                          (ev.type, ev.code, ev.value))

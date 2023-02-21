@@ -1,5 +1,7 @@
 #!/bin/sh
 
+sudo swapoff -a
+
 VENVDIR=$HOME/env2-robottank
 BINDIR=$VENVDIR/bin
 ROBOTDIR=$VENVDIR/RobotTank1

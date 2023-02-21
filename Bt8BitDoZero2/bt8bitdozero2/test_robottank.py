@@ -5,7 +5,7 @@
 #
 import click
 import time
-from dcmtr import DcMtrClient
+from cmdclientserver import CmdClient
 from .my_logger import get_logger
 from . import Bt8BitDoZero2, Bt8BitDoZero2N
 
@@ -126,7 +126,9 @@ class Test_RobotTank:
 
         # move
         self.speed_add(d_speed)
-        self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+        #self._dc_mtr.send_cmdline('speed %s %s' % tuple(self._speed))
+        ret = self._dc_mtr.call('SPEED %s %s' % tuple(self._speed))
+        self.__log.debug('ret=%s', ret)
 
         self._prev_code = code
         self._prev_val = val
@@ -146,12 +148,13 @@ def robottank(obj, devs, svr_host, svr_port, debug):
     __log = get_logger(__name__, obj['debug'] or debug)
     __log.debug('obj=%s, devs=%s', obj, devs)
 
-    dc_mtr = DcMtrClient(svr_host, svr_port, obj['debug'] or debug)
+    dc_mtr = CmdClient(svr_host, svr_port, obj['debug'] or debug)
     test_app = Test_RobotTank(devs, dc_mtr, obj['debug'] or debug)
 
     try:
         test_app.main()
 
     finally:
-        dc_mtr.send_cmdline('stop')
+        ret = dc_mtr.call('STOP')
+        self.__log.debug('ret=%s', ret)
         print('END')

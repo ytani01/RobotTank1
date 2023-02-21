@@ -5,12 +5,15 @@ BINDIR=$VENVDIR/bin
 TOPDIR=$VENVDIR/RobotTank1
 WORKDIR=$TOPDIR/DcMtr
 
+PINS="17 18 13 12"
+PORT=12345
+
 cd $WORKDIR
 while true; do
     . $BINDIR/activate
     echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 
-    python3 -m dcmtr dc-mtr-server 17 18 13 12 -p 12345
+    python3 -m dcmtr server -p $PORT $PINS
 
     deactivate
 

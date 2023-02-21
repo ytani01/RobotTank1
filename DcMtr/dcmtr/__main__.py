@@ -3,11 +3,8 @@
 #
 import click
 from . import __prog_name__, __version__, __author__
+from . import dc_mtr, dc_mtr_n, server
 from . import get_logger
-from . import dc_mtr
-from . import dc_mtr_n
-from . import dc_mtr_server
-from . import dc_mtr_client
 
 
 @click.group(invoke_without_command=True,
@@ -34,8 +31,7 @@ def cli(ctx, opt0, debug):
 
 cli.add_command(dc_mtr)
 cli.add_command(dc_mtr_n)
-cli.add_command(dc_mtr_server)
-cli.add_command(dc_mtr_client)
+cli.add_command(server)
 
 
 if __name__ == '__main__':
