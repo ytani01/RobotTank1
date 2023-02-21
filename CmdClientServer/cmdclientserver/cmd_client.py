@@ -41,7 +41,8 @@ class CmdClient:
                 return rep_str
 
         except Exception as e:
-            self.__log.error('%s:%s', type(e).__name__, e)
-            rep_str = 'NG ' + '%s:%s' % (type(e).__name__, e)
+            msg = '%s:%s' % (type(e).__name__, e)
+            self.__log.error(msg)
+            rep_str = 'NG ' + msg
 
         return rep_str

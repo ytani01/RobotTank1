@@ -20,8 +20,12 @@ class CmdClientApp:
 
     def main(self):
         # 1st time
-        rep_str = self._clnt.call(self._cmdline)
-        self.__log.info('%a>%a', self._cmdline, rep_str)
+        cmdline = 'HELLO'
+        rep_str = self._clnt.call(cmdline)
+        self.__log.info('%a>%a', cmdline, rep_str)
+
+        if not rep_str.startswith('OK'):
+            return
 
         # 2nd time
         rep_str = self._clnt.call(self._cmdline)
