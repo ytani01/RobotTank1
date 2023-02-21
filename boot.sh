@@ -9,6 +9,8 @@ ROBOTDIR=$VENVDIR/RobotTank1
 $ROBOTDIR/start_dc_server.sh &
 $ROBOTDIR/start_distance_server.sh &
 
+$ROBOTDIR/start_mjpg-streamer.sh &
+
 sleep 2
 
 #exec $ROBOTDIR/start_kbd.sh

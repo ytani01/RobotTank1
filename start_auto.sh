@@ -11,7 +11,8 @@ MTR_PORT=12345
 D_HOST=localhost
 D_PORT=12347
 
-DEVS="0 1"
+#DEVS="0 1"
+DEVS="0"
 
 cd $WORKDIR
 pwd

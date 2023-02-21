@@ -7,7 +7,8 @@ WORKDIR=$TOPDIR/Bt8BitDoZero2
 
 MTR_HOST=localhost
 MTR_PORT=12345
-DEV=1
+#DEV=1
+DEV=0
 
 cd $WORKDIR
 while true; do
