@@ -145,7 +145,7 @@ class SensorWatcher(threading.Thread):
                     self._dc_mtr.call(
                         'SPEED %s %s' % (-turn_speed, turn_speed))
 
-                delay3 = 1.0 + random.random()
+                delay3 = 0.5 + random.random() * 1.5
                 self._dc_mtr.call('DELAY %s' % (delay3))
 
                 time.sleep(delay1 + delay2 + delay3)
@@ -221,7 +221,6 @@ class RobotTankAuto:
                     cmdline = 'SPEED %s %s' % (
                         int(self._base_speed / 3), self._base_speed)
                     self._dir = Direction.RIGHT
-
                 else:
                     cmdline = 'SPEED %s %s' % (
                         self._base_speed, int(self._base_speed / 3))
