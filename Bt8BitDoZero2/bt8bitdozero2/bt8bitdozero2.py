@@ -39,7 +39,7 @@ class Bt8BitDoZero2N:
                     self.__log.error('%s:%s', type(e).__name__, e)
                     time.sleep(2)
                 else:
-                    self.__log.info('connect: %s', d)
+                    self.__log.debug('connect: %s', d)
 
             self._bt8bitdozero2.append(b)
 
@@ -86,6 +86,8 @@ class Bt8BitDoZero2(threading.Thread):
 
         self.input_dev = evdev.device.InputDevice(self.input_dev_file)
 
+        self._active = False
+
         super().__init__(daemon=True)
 
     def wait_key_event(self):
@@ -116,10 +118,13 @@ class Bt8BitDoZero2(threading.Thread):
     def run(self):
         self.__log.debug('')
 
+        self._active = True
         flag_err = False
-        while True:
+
+        while self._active:
             try:
-                self.input_dev = evdev.device.InputDevice(self.input_dev_file)
+                self.input_dev = evdev.device.InputDevice(
+                    self.input_dev_file)
             except Exception as e:
                 flag_err = True
                 self.__log.error('%s:%s', type(e).__name__, e)
@@ -146,6 +151,10 @@ class Bt8BitDoZero2(threading.Thread):
                              evdev.ecodes.EV[evtype], evtype,
                              __class__.keycode2str(evtype, code), code,
                              __class__.keyval2str(evtype, value), value)
+
+            self.input_dev.close()
+
+        self.__log.debug('END')
 
     @classmethod
     def keycode2str(cls, evtype, code):
