@@ -12,6 +12,8 @@ from .my_logger import get_logger
 
 class Bt8BitDoZero2N:
     """  """
+    __log = get_logger(__name__, False)
+
     def __init__(self, devs=[], cb_func=None, debug=False):
         """
         Parameters
@@ -48,6 +50,8 @@ class Bt8BitDoZero2N:
 
 
 class Bt8BitDoZero2(threading.Thread):
+    __log = get_logger(__name__, False)
+
     DEVFILE_PREFIX = '/dev/input/event'
 
     EV_KEY_VAL = ('RELEASE', 'PUSH', 'HOLD')
@@ -102,6 +106,10 @@ class Bt8BitDoZero2(threading.Thread):
                     break
 
                 self.__log.debug('ignore: %s', ev)
+
+        except KeyboardInterrupt as e:
+            self.__log.info('%s:%s', type(e).__name__, e)
+            raise e
 
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
@@ -158,18 +166,37 @@ class Bt8BitDoZero2(threading.Thread):
 
     @classmethod
     def keycode2str(cls, evtype, code):
-        return evdev.ecodes.bytype[evtype][code]
+        try:
+            return evdev.ecodes.bytype[evtype][code]
+
+        except KeyError as e:
+            cls.__log.error('%s:%s', type(e).__name__, e)
+            return ''
 
     @classmethod
-    def keyval2str(cls, evtype, value):
-        if evtype == evdev.events.EV_ABS:
-            return cls.EV_ABS_VAL[int(value/127)]
+    def keyval2str(cls, evtype: int, value: int):
+        try:
+            if evtype == evdev.events.EV_ABS:
+                return cls.EV_ABS_VAL[int(value/127)]
 
-        return cls.EV_KEY_VAL[value]
+            return cls.EV_KEY_VAL[value]
+
+        except KeyError as e:
+            cls.__log.error('%s:%s', type(e).__name__, e)
+            return ''
 
     @classmethod
-    def pushed(cls, btn_name, evtype, code, val):
-        if cls.keyval2str(evtype, val) != 'PUSH':
+    def evtype2str(cls, evtype: int):
+        try:
+            return evdev.ecodes.EV[evtype]
+
+        except KeyError as e:
+            cls.__log.error('%s:%s', type(e).__name__, e)
+            return ''
+
+    @classmethod
+    def pushed(cls, btn_name: str, evtype: int, code: int, val: int):
+        if cls.keyval2str(evtype, val) not in ['PUSH', 'HIGH', 'LOW']:
             return False
 
         if [evtype, code] == cls.BTN[btn_name]:

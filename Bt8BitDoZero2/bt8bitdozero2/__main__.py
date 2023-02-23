@@ -30,7 +30,6 @@ def cli(ctx, opt0, debug):
         print(ctx.get_help())
 
 
-cli.add_command(bt8bitdozero2)
 cli.add_command(robottank)
 
 
