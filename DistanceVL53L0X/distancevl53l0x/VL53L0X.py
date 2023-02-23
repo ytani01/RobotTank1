@@ -88,7 +88,7 @@ _POSSIBLE_LIBRARY_LOCATIONS = ['.', '../bin'] + site.getsitepackages() + [site.g
 for lib_location in _POSSIBLE_LIBRARY_LOCATIONS:
     try:
         _TOF_LIBRARY = CDLL(lib_location + '/vl53l0x_python' + suffix)
-        print('_TOF_LIBRARY._name=%s\n' % (_TOF_LIBRARY._name))
+        # print('_TOF_LIBRARY._name=%s\n' % (_TOF_LIBRARY._name))
         break
     except OSError:
         pass

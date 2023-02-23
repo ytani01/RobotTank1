@@ -8,15 +8,19 @@ WORKDIR=$TOPDIR/DcMtr
 PINS="17 18 13 12"
 PORT=12345
 
+. $BINDIR/activate
+echo "VIRTUAL_ENV=$VIRTUAL_ENV"
+
 cd $WORKDIR
 while true; do
-    . $BINDIR/activate
-    echo "VIRTUAL_ENV=$VIRTUAL_ENV"
+    if [ $# -gt 0 ]; then
+        echo ----- pip install
+        pip install .
+    fi
 
+    echo ----- dcmtr server
     python3 -m dcmtr server -p $PORT $PINS
-
-    deactivate
-
     echo -----
+
     sleep 2
 done

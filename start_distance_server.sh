@@ -7,15 +7,19 @@ WORKDIR=$TOPDIR/DistanceVL53L0X
 
 PORT=12347
 
+. $BINDIR/activate
+echo "VIRTUAL_ENV=$VIRTUAL_ENV"
+
 cd $WORKDIR
 while true; do
-    . $BINDIR/activate
-    echo "VIRTUAL_ENV=$VIRTUAL_ENV"
+    if [ $# -gt 0 ]; then
+        echo ----- pip install
+        pip install .
+    fi
 
+    echo ----- distancevl53l0x server
     python3 -m distancevl53l0x server -p $PORT
-
-    deactivate
-
     echo -----
-    sleep 1
+
+    sleep 2
 done

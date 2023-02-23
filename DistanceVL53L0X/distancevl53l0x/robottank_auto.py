@@ -111,10 +111,18 @@ class SensorWatcher(threading.Thread):
                 time.sleep(.5)
                 continue
 
-            if distance < self._distance_near or distance > self.DISTANCE_FAR:
+            if (distance < self._distance_near * 1.1 or
+                distance > self.DISTANCE_FAR):
+
                 self.__log.info('near_count=%s,%smm(%s,%s)!!',
                                 near_count, int(distance),
                                 self._distance_near, self.DISTANCE_FAR)
+
+                if (distance >= self._distance_near and
+                    distance <= self.DISTANCE_FAR):
+
+                    time.sleep(0.1)
+                    continue
 
                 self._dc_mtr.call('CLEAR')
 

@@ -156,5 +156,5 @@ def robottank(obj, devs, svr_host, svr_port, debug):
 
     finally:
         ret = dc_mtr.call('STOP')
-        self.__log.debug('ret=%s', ret)
+        __log.debug('ret=%s', ret)
         print('END')

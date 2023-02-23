@@ -14,19 +14,25 @@ D_PORT=12347
 #DEVS="0 1"
 DEVS="0"
 
+
+. $BINDIR/activate
+echo "VIRTUAL_ENV=$VIRTUAL_ENV"
+
 cd $WORKDIR
 pwd
 while true; do
-    . $BINDIR/activate
-    echo "VIRTUAL_ENV=$VIRTUAL_ENV"
-
+    if [ $# -gt 0 ]; then
+        echo ----- pip install
+        pip install .
+    fi
+    
+    echo ----- distancevl53l0x robottankauto
     python3 -m distancevl53l0x robottankauto \
             --dc_host $MTR_HOST --dc_port=$MTR_PORT \
             --ds_host $D_HOST --ds_port=$D_PORT \
             $DEVS
 
-    deactivate
-
     echo -----
+
     sleep 2
 done

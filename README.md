@@ -2,7 +2,21 @@
 
 Robot Tank Package
 
-## 
+## setup
+
+### スワップファイル拡張
+
+``` shell
+sudo vi /etc/dphys-swapfile
+-----
+CONF_SWAPSIZE=1024
+-----
+sudo service dphys-swapfile restart
+```
+
+### 
+
+### mjpg-streamer
 
 [mjpg-streamer](./docs/mjpg-streamer.md)
 
