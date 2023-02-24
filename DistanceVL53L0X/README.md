@@ -2,7 +2,7 @@
 
 VL53L0X: TOF Distance Sensor
 
-## Setup
+## Install
 
 ### Gadgetoid/VL53L0X-python.git
 
@@ -28,11 +28,10 @@ patch -b < VL53L0X.py-patch
 patch -b < VL53L0X_example.py-patch
 ```
 
-
-### Test
+### Python Package
 
 ``` shell
-[Ctrl]-C
+pip install .
 ```
 
 
@@ -40,3 +39,8 @@ patch -b < VL53L0X_example.py-patch
 
 ``` text
 ```
+
+
+## References
+
+- [Gadgetoid/VL53L0X-python](https://github.com/Gadgetoid/VL53L0X-python)
