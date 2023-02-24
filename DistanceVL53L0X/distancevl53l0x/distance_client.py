@@ -4,10 +4,11 @@
 # -*- coding: utf-8 -*-
 #
 from cmdclientserver import CmdClient, get_logger
+from . import DEF_PORT
 
 
 class DistanceClient:
-    def __init__(self, svr_host, svr_port, debug=False):
+    def __init__(self, svr_host='localhost', svr_port=DEF_PORT, debug=False):
         self._dbg = debug
         __class__.__log = get_logger(__class__.__name__, self._dbg)
         self.__log.debug('svr=%s:%s', svr_host, svr_port)

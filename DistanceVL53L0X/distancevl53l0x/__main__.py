@@ -30,7 +30,6 @@ def cli(ctx, opt0, debug):
 
 cli.add_command(distance)
 cli.add_command(server)
-cli.add_command(robottankauto)
 
 
 if __name__ == '__main__':

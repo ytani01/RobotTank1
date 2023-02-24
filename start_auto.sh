@@ -3,7 +3,7 @@
 VENVDIR=$HOME/env2-robottank
 BINDIR=$VENVDIR/bin
 TOPDIR=$VENVDIR/RobotTank1
-WORKDIR=$TOPDIR/DistanceVL53L0X
+WORKDIR=$TOPDIR
 
 MTR_HOST=localhost
 MTR_PORT=12345
@@ -21,16 +21,11 @@ echo "VIRTUAL_ENV=$VIRTUAL_ENV"
 cd $WORKDIR
 pwd
 while true; do
-    if [ $# -gt 0 ]; then
-        echo ----- pip install
-        pip install .
-    fi
-    
-    echo ----- distancevl53l0x robottankauto
-    python3 -m distancevl53l0x robottankauto \
-            --dc_host $MTR_HOST --dc_port=$MTR_PORT \
-            --ds_host $D_HOST --ds_port=$D_PORT \
-            $DEVS
+    echo ----- robottank_auto.py
+    ./robottank_auto.py \
+        --dc_host $MTR_HOST --dc_port=$MTR_PORT \
+        --ds_host $D_HOST --ds_port=$D_PORT \
+        $DEVS
 
     echo -----
 

@@ -4,6 +4,7 @@
 #
 # -*- coding: utf-8 -*-
 #
+import sys
 import click
 import time
 # import datetime
@@ -12,8 +13,7 @@ import threading
 from enum import Enum
 from cmdclientserver import CmdClient
 from bt8bitdozero2 import Bt8BitDoZero2, Bt8BitDoZero2N
-from . import DistanceClient
-from .my_logger import get_logger
+from distancevl53l0x import DistanceClient, get_logger
 
 
 class Direction(Enum):
@@ -85,55 +85,62 @@ class SensorWatcher(threading.Thread):
         near_count = 0
 
         while self._active:
+            if not self.is_auto():
+                time.sleep(0.5)
+                continue
+
             speed = self._base_speed
 
             distance = self._d_clnt.get_distance()
+            self.__log.debug('distance=%s', distance)
+
             if distance is None:
                 self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('SPEED 0 0')
+                self._dc_mtr.call('STOP')
                 time.sleep(1)
                 continue
 
             if distance < 0.0:
                 self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('SPEED 0 0')
-                time.sleep(1)
-                continue
-
-            if distance >= self.DISTANCE_MAX:
-                self.__log.warning('distance=%s??', distance)
+                self._dc_mtr.call('STOP')
                 time.sleep(0.5)
                 continue
 
-            self.__log.debug('distance=%s', distance)
+            if self._distance_near < distance <= self._distance_near * 1.1:
+                if near_count == 0:
+                    self.__log.info('[%d]%03dmm(%s,%s) !',
+                                    near_count, int(distance),
+                                    self._distance_near, self.DISTANCE_FAR)
 
-            if not self.is_auto():
-                time.sleep(.5)
+                    self._dc_mtr.call('CLEAR')
+                    self._dc_mtr.call('STOP')
+
+                    delay1 = 0.2
+                    self._dc_mtr.call('DELAY %s' % (delay1))
+                    time.sleep(delay1)
+
+                    near_count += 1
+                    continue
+
+                time.sleep(0.2)
                 continue
 
-            if (distance < self._distance_near * 1.1 or
-                distance > self.DISTANCE_FAR):
+            if (distance <= self._distance_near or
+                distance >= self.DISTANCE_FAR):
 
-                self.__log.info('near_count=%s,%smm(%s,%s)!!',
+                self.__log.info('[%d]%03dmm(%s,%s) !',
                                 near_count, int(distance),
                                 self._distance_near, self.DISTANCE_FAR)
 
-                if (distance >= self._distance_near and
-                    distance <= self.DISTANCE_FAR):
-
-                    time.sleep(0.1)
-                    continue
-
                 self._dc_mtr.call('CLEAR')
+                self._dc_mtr.call('STOP')
 
-                # stop
-                self._dc_mtr.call('SPEED 0 0')
                 delay1 = 0.2
                 self._dc_mtr.call('DELAY %s' % (delay1))
+                time.sleep(delay1)
 
                 if near_count < 2:
                     near_count += 1
-                    time.sleep(delay1)
                     continue
 
                 near_count = 0
@@ -153,11 +160,11 @@ class SensorWatcher(threading.Thread):
                     self._dc_mtr.call(
                         'SPEED %s %s' % (-turn_speed, turn_speed))
 
-                delay3 = 0.5 + random.random() * 1.5
+                delay3 = 0.5 + random.random() * 2.0
                 self._dc_mtr.call('DELAY %s' % (delay3))
+                self.__log.info('delay3=%s', delay3)
 
                 time.sleep(delay1 + delay2 + delay3)
-                # time.sleep(delay1 + delay2)
 
             near_count = 0
             time.sleep(0.001)
@@ -206,8 +213,6 @@ class RobotTankAuto:
             self._devs, self.btn_cb, debug=self._dbg)
 
     def main(self):
-        self.__log.debug('')
-
         self._watcher.start()
 
         self._bt8bitdozero2.start()
@@ -215,6 +220,8 @@ class RobotTankAuto:
         if self._interval <= 0.0:
             self._interval = 0.01
             self.__log.debug('interval=%s', self._interval)
+
+        self.__log.info('READY')
 
         try:
             while True:
@@ -253,11 +260,12 @@ class RobotTankAuto:
         self.__log.debug('')
 
         # !! code_strがlistのこともある !!
+        evtype_str = Bt8BitDoZero2.evtype2str(evtype)
         code_str = Bt8BitDoZero2.keycode2str(evtype, code)
         val_str = Bt8BitDoZero2.keyval2str(evtype, val)
 
-        self.__log.info('dev=%d, evtype=%d, code=%d:%s, val=%d:%s',
-                        dev, evtype, code, code_str, val, val_str)
+        self.__log.info('%d:%s(%d):%s(%d):%s(%d)',
+                        dev, evtype_str, evtype, code_str, code, val_str, val)
 
         if val_str == 'RELEASE':
             return
@@ -319,28 +327,34 @@ class RobotTankAuto:
               help='DC Motor server port number')
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
-@click.pass_obj
-def robottankauto(obj, devs, offset, interval,
-                   dc_host, dc_port, ds_host, ds_port, debug):
-    """ robottankauto """
-    __log = get_logger(__name__, obj['debug'] or debug)
-    __log.debug('obj=%s', obj)
+def main(devs, offset, interval, dc_host, dc_port, ds_host, ds_port, debug):
+    __log = get_logger(__name__, debug)
     __log.debug('devs=%s, offset=%s, interval=%s, dc=%s, ds=%s',
                 devs, offset, interval,
                 (dc_host, dc_port), (ds_host, ds_port))
 
-    dc_mtr = CmdClient(dc_host, dc_port, obj['debug'] or debug)
-    distance_client = DistanceClient(ds_host, ds_port, obj['debug'] or debug)
+
+    if len(devs) == 0:
+        sys.exit(1)
+
+    motor_client = CmdClient(dc_host, dc_port, debug=debug)
+    distance_client = DistanceClient(ds_host, ds_port, debug=debug)
 
     app = RobotTankAuto(
-        devs, offset, interval, dc_mtr, distance_client,
-        debug=obj['debug'] or debug)
+        devs, offset, interval, motor_client, distance_client,
+        debug=debug)
     try:
-        dc_mtr.call('CLEAR')
-        dc_mtr.call('STOP')
+        __log.info('START')
+        motor_client.call('CLEAR')
+        motor_client.call('STOP')
         app.main()
 
     finally:
-        dc_mtr.call('CLEAR')
-        dc_mtr.call('STOP')
+        motor_client.call('CLEAR')
+        motor_client.call('STOP')
         __log.info('END')
+        sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
