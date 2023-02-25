@@ -2,24 +2,27 @@
 
 DC Motor package
 
+## Install
+
+
+
 ## Software Architecture
 
 ``` text
 +-------------+
 | DcMtrClient |
 +-------------+
+|  CmdClient  |
++-------------+
        |
        | TCP/IP
        v
-+-----------------+
-| DcMtrServer     |
-|-----------------|
-|  | DcMtrHandler |
-|  |--------------|
-|  |    DcMtrN    |
-|  |--------------|
-|  |    DcMtr     |
-|  +--------------|
-|                 |
-+-----------------+
++--------- server
+|  CmdServer    |
+|---------------|
+|  |   DcMtrN   |
+|  |------------|
+|  |   DcMtr    |
+|  +------------|
++---------------+
 ```

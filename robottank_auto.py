@@ -4,6 +4,7 @@
 #
 # -*- coding: utf-8 -*-
 #
+import traceback
 import sys
 import click
 import time
@@ -11,7 +12,7 @@ import time
 import random
 import threading
 from enum import Enum
-from cmdclientserver import CmdClient
+from dcmtr import DcMtrClient
 from bt8bitdozero2 import Bt8BitDoZero2, Bt8BitDoZero2N
 from distancevl53l0x import DistanceClient, get_logger
 
@@ -38,7 +39,7 @@ class SensorWatcher(threading.Thread):
         """
         Parameters
         ----------
-        dc_mtr: CmdClient
+        dc_mtr: DcMtrClient
         base_speed: int
         distance_client: DistanceClient
         """
@@ -92,17 +93,17 @@ class SensorWatcher(threading.Thread):
             speed = self._base_speed
 
             distance = self._d_clnt.get_distance()
-            self.__log.info('distance=%s', distance)
+            self.__log.debug('distance=%s', distance)
 
             if distance is None:
-                self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('STOP')
+                self._dc_mtr.set_clear()
+                self._dc_mtr.set_stop()
                 time.sleep(1)
                 continue
 
             if distance < 0.0:
-                self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('STOP')
+                self._dc_mtr.set_clear()
+                self._dc_mtr.set_stop()
                 time.sleep(0.5)
                 continue
 
@@ -116,11 +117,11 @@ class SensorWatcher(threading.Thread):
                                     near_count, int(distance),
                                     self._distance_near, self.DISTANCE_FAR)
 
-                    self._dc_mtr.call('CLEAR')
-                    self._dc_mtr.call('STOP')
+                    self._dc_mtr.set_clear()
+                    self._dc_mtr.set_stop()
 
                     delay1 = 0.2
-                    self._dc_mtr.call('DELAY %s' % (delay1))
+                    self._dc_mtr.set_delay(delay1)
                     time.sleep(delay1)
 
                     near_count += 1
@@ -136,11 +137,11 @@ class SensorWatcher(threading.Thread):
                                 near_count, int(distance),
                                 self._distance_near, self.DISTANCE_FAR)
 
-                self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('STOP')
+                self._dc_mtr.set_clear()
+                self._dc_mtr.set_stop()
 
                 delay1 = 0.2
-                self._dc_mtr.call('DELAY %s' % (delay1))
+                self._dc_mtr.set_delay(delay1)
                 time.sleep(delay1)
 
                 if near_count < 2:
@@ -150,22 +151,20 @@ class SensorWatcher(threading.Thread):
                 near_count = 0
 
                 # back
-                self._dc_mtr.call('SPEED %s %s' % (-speed, -speed))
+                self._dc_mtr.set_speed([-speed, -speed])
 
                 delay2 = 0.3 + random.random() / 2
-                self._dc_mtr.call('DELAY %s' % (delay2))
+                self._dc_mtr.set_delay(delay2)
 
                 # turn
                 turn_speed = int(speed / 2)
                 if random.random() >= 0.4:
-                    self._dc_mtr.call(
-                        'SPEED %s %s' % (turn_speed, -turn_speed))
+                    self._dc_mtr.set_speed([turn_speed, -turn_speed])
                 else:
-                    self._dc_mtr.call(
-                        'SPEED %s %s' % (-turn_speed, turn_speed))
+                    self._dc_mtr.set_speed([-turn_speed, turn_speed])
 
                 delay3 = 0.5 + random.random() * 2.0
-                self._dc_mtr.call('DELAY %s' % (delay3))
+                self._dc_mtr.set_delay(delay3)
                 self.__log.info('delay3=%s', delay3)
 
                 time.sleep(delay1 + delay2 + delay3)
@@ -173,14 +172,14 @@ class SensorWatcher(threading.Thread):
             near_count = 0
             time.sleep(0.001)
 
-        self._dc_mtr.call('STOP')
+        self._dc_mtr.set_stop()
 
 
 class RobotTankAuto:
     """ Robot Tank Auto Pilot """
 
     SPEED_MAX = 100
-    DEF_BASE_SPEED = 70
+    DEF_BASE_SPEED = 80
 
     def __init__(self, devs=[], offset=0.0, interval=0.0,
                  dc_mtr=None, distance_client=None,
@@ -234,18 +233,14 @@ class RobotTankAuto:
                     time.sleep(1)
                     continue
 
-                cmdline = 'SPEED 0 0'
-
                 if self._dir == Direction.LEFT:
-                    cmdline = 'SPEED %s %s' % (
-                        int(self._base_speed / 3), self._base_speed)
+                    self._dc_mtr.set_speed(
+                        [int(self._base_speed / 3), self._base_speed])
                     self._dir = Direction.RIGHT
                 else:
-                    cmdline = 'SPEED %s %s' % (
-                        self._base_speed, int(self._base_speed / 3))
+                    self._dc_mtr.set_speed(
+                        [self._base_speed, int(self._base_speed / 3)])
                     self._dir = Direction.LEFT
-
-                self._dc_mtr.call(cmdline)
 
                 time.sleep(.7 + random.random())
 
@@ -254,9 +249,10 @@ class RobotTankAuto:
 
         except Exception as e:
             self.__log.error('%s:%s', type(e).__name__, e)
+            print(traceback.format_exc())
 
-        self._dc_mtr.call('CLEAR')
-        self._dc_mtr.call('SPEED 0 0')
+        self._dc_mtr.set_clear()
+        self._dc_mtr.set_stop()
         self._watcher.end()
 
     def btn_cb(self, dev, evtype, code, val):
@@ -276,8 +272,8 @@ class RobotTankAuto:
 
         if not self.is_auto():
             if Bt8BitDoZero2.pushed('SEL', evtype, code, val):
-                self._dc_mtr.call('CLEAR')
-                self._dc_mtr.call('SPEED 0 0')
+                self._dc_mtr.set_clear()
+                self._dc_mtr.set_stop()
                 self.auto_on()
             return
 
@@ -359,7 +355,7 @@ def main(devs, offset, interval, dc_host, dc_port, ds_host, ds_port, debug):
     if len(devs) == 0:
         sys.exit(1)
 
-    motor_client = CmdClient(dc_host, dc_port, debug=debug)
+    motor_client = DcMtrClient(dc_host, dc_port, debug=debug)
     distance_client = DistanceClient(ds_host, ds_port, debug=debug)
 
     app = RobotTankAuto(
@@ -367,13 +363,13 @@ def main(devs, offset, interval, dc_host, dc_port, ds_host, ds_port, debug):
         debug=debug)
     try:
         __log.info('START')
-        motor_client.call('CLEAR')
-        motor_client.call('STOP')
+        motor_client.set_clear()
+        motor_client.set_stop()
         app.main()
 
     finally:
-        motor_client.call('CLEAR')
-        motor_client.call('STOP')
+        motor_client.set_clear()
+        motor_client.set_stop()
         __log.info('END')
         sys.exit(0)
 

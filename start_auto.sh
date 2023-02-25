@@ -6,6 +6,7 @@ TOPDIR=$VENVDIR/RobotTank1
 WORKDIR=$TOPDIR
 PKGDIR1=$TOPDIR/Bt8BitDoZero2
 PKGDIR2=$TOPDIR/DistanceVL53L0X
+PKGDIR3=$TOPDIR/DcMtr
 
 MTR_HOST=localhost
 MTR_PORT=12345
@@ -36,6 +37,7 @@ while true; do
     if [ $# -gt 0 ]; then
         pipinstall $PKGDIR1
         pipinstall $PKGDIR2
+        pipinstall $PKGDIR3
     fi
 
     echo ----- robottank_auto.py
