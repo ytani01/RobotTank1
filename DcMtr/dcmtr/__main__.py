@@ -3,24 +3,24 @@
 #
 import click
 from . import __prog_name__, __version__, __author__
-from . import dc_mtr, dc_mtr_n, server
+from . import server
 from . import get_logger
 
 
 @click.group(invoke_without_command=True,
              context_settings=dict(help_option_names=['-h', '--help']),
              help=" by " + __author__)
-@click.option('--opt0', '-o0', 'opt0', type=str, default=None, help='opt1')
+@click.option('--opt', '-o0', 'opt', type=str, default=None, help='opt1')
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
 @click.version_option(version=__version__)
 @click.pass_context
-def cli(ctx, opt0, debug):
+def cli(ctx, opt, debug):
     """ command group """
     __log = get_logger(__name__, debug)
-    __log.debug('opt0=%s', opt0)
+    __log.debug('opt=%s', opt)
 
-    ctx.obj = {'opt0': opt0, 'debug': debug}
+    ctx.obj = {'opt': opt, 'debug': debug}
 
     subcmd = ctx.invoked_subcommand
     __log.debug('subcmd=%s', subcmd)
@@ -29,8 +29,6 @@ def cli(ctx, opt0, debug):
         print(ctx.get_help())
 
 
-cli.add_command(dc_mtr)
-cli.add_command(dc_mtr_n)
 cli.add_command(server)
 
 

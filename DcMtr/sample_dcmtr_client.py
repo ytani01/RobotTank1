@@ -4,14 +4,13 @@
 #
 # -*- coding: utf-8 -*-
 #
-import pigpio
+import sys
 import click
 import cuilib
-from .my_logger import get_logger
-from . import DcMtrN
+from dcmtr import DcMtrClient, get_logger
 
 
-class Test_DcMtrN:
+class App:
     """ Test DcMtrN class """
 
     DEF_STD_SPEED = [60, 60]
@@ -20,17 +19,19 @@ class Test_DcMtrN:
     ROT_RATIO = 0.7
     CURV_RATIO = 0.4
 
-    def __init__(self, pi, pin, debug):
+    def __init__(self, svrhost, svrport, debug):
         self.dbg = debug
         __class__.__log = get_logger(__class__.__name__, debug)
-        self.pi = pi
-        self.pin = pin
-        self.__log.debug('pin=%s', pin)
+        self.__log.debug('svr=%s:%s', svrhost, svrport)
 
-        self.dc_mtr_n = DcMtrN(self.pi, pin, self.dbg)
+        self._svrhost = svrhost
+        self._svrport = svrport
+
+        self._mtr = DcMtrClient(self._svrhost, self._svrport, self.dbg)
         self.cui = cuilib.Cui()
 
-        self.std_speed = __class__.DEF_STD_SPEED
+        self.std_speed = self.DEF_STD_SPEED
+        self.__log.debug('std_speed=%s', self.std_speed)
         self.speed = [0, 0]
 
     def main(self):
@@ -45,7 +46,7 @@ class Test_DcMtrN:
 
         self.cui.add('z', self.l_down, 'Left Down')
         self.cui.add('c', self.r_down, 'Right Down')
-        
+
         self.cui.add('a', self.l_rot, 'Rotate Left')
         self.cui.add('d', self.r_rot, 'Rotate Right')
 
@@ -56,11 +57,11 @@ class Test_DcMtrN:
         self.cui.join()
 
     def set_speed(self):
-        self.speed = self.dc_mtr_n.set_speed(self.speed)
         self.__log.info('speed=%s', self.speed)
+        self._mtr.set_speed(self.speed)
 
     def forward(self, key_sym):
-        self.speed = self.std_speed
+        self.speed = [s for s in self.std_speed]  # 値渡し！
         self.set_speed()
 
     def backward(self, key_sym):
@@ -69,22 +70,26 @@ class Test_DcMtrN:
 
     def l_up(self, key_sym):
         self.std_speed[0] += self.ADJ_V
+        self.__log.debug('std_speed=%s', self.std_speed)
         self.forward(key_sym)
 
     def r_up(self, key_sym):
         self.std_speed[1] += self.ADJ_V
+        self.__log.debug('std_speed=%s', self.std_speed)
         self.forward(key_sym)
 
     def l_down(self, key_sym):
         self.std_speed[0] -= self.ADJ_V
+        self.__log.debug('std_speed=%s', self.std_speed)
         self.forward(key_sym)
 
     def r_down(self, key_sym):
         self.std_speed[1] -= self.ADJ_V
+        self.__log.debug('std_speed=%s', self.std_speed)
         self.forward(key_sym)
 
     def l_rot(self, key_sym):
-        if ( self.speed == [0, 0] ):
+        if self.speed == [0, 0]:
             self.speed[0] = -self.std_speed[0] * self.ROT_RATIO
             self.speed[1] = self.std_speed[1] * self.ROT_RATIO
         else:
@@ -94,7 +99,7 @@ class Test_DcMtrN:
         self.set_speed()
 
     def r_rot(self, key_sym):
-        if ( self.speed == [0, 0] ):
+        if self.speed == [0, 0]:
             self.speed[0] = self.std_speed[1] * self.ROT_RATIO
             self.speed[1] = -self.std_speed[1] * self.ROT_RATIO
         else:
@@ -109,34 +114,38 @@ class Test_DcMtrN:
 
     def set_break(self, key_sym):
         self.__log.info('')
-        self.dc_mtr_n.set_break()
+        self._mtr.set_break()
         self.set_stop(key_sym)
 
     def quit(self, key_sym):
         self.__log.info('')
-        self.set_break(key_sym)
+        self.set_stop(key_sym)
         self.cui.end()
 
 
-@click.command(help="dc_mtr_n")
-@click.argument('pin1', type=int)
-@click.argument('pin2', type=int)
-@click.argument('pin3', type=int)
-@click.argument('pin4', type=int)
-@click.option('--opt1', '-o1', 'opt1', type=str, default=None, help='opt')
+@click.command(context_settings=dict(help_option_names=['-h', '--help']),
+               help="Test DcMtrN Package")
+@click.option('--svrhost', '-s', 'svrhost', type=str, default='localhost',
+              help='server host')
+@click.option('--svrport', '-p', 'svrport', type=int, default=12345,
+              help='server host')
 @click.option('--debug', '-d', 'debug', is_flag=True, default=False,
               help='debug flag')
-@click.pass_obj
-def dc_mtr_n(obj, pin1, pin2, pin3, pin4, opt1, debug):
-    """ dc_mtr_n """
-    __log = get_logger(__name__, obj['debug'] or debug)
-    __log.debug('obj=%s, opt1=%s, args=%s', obj, opt1, (pin1, pin2, pin3, pin4))
+def main(svrhost, svrport, debug):
+    __log = get_logger(__name__, debug)
+    __log.debug('svr=%s:%s', svrhost, svrport)
 
-    pi = pigpio.pi()
-    test_app = Test_DcMtrN(pi, ((pin1, pin2), (pin3, pin4)), obj['debug'] or debug)
+    res = 0
+    app = App(svrhost, svrport, debug)
 
     try:
-        test_app.main()
+        print('START')
+        app.main()
 
     finally:
-        pi.stop()
+        print('END')
+        sys.exit(res)
+
+
+if __name__ == '__main__':
+    main()
