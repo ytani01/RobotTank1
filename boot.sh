@@ -6,14 +6,29 @@ VENVDIR=$HOME/env2-robottank
 BINDIR=$VENVDIR/bin
 ROBOTDIR=$VENVDIR/RobotTank1
 
-$ROBOTDIR/start_dc_server.sh &
-$ROBOTDIR/start_distance_server.sh &
 
-$ROBOTDIR/start_mjpg-streamer.sh &
+while true; do
+    $ROBOTDIR/start_mjpg-streamer.sh &
 
-sleep 2
+    $ROBOTDIR/start_dc_server.sh &
+    $ROBOTDIR/start_distance_server.sh &
 
-#exec $ROBOTDIR/start_kbd.sh
-$ROBOTDIR/start_bt8bitdozero2.sh &
+    sleep 2
 
-$ROBOTDIR/start_auto.sh &
+    $ROBOTDIR/start_bt8bitdozero2.sh &
+
+    $ROBOTDIR/start_auto.sh &
+
+    while true; do
+	waitbtn.py TL
+	if [ $? -eq 0 ]; then
+	    break
+	fi
+    done
+
+    pkill start
+    pkill python3
+    pkill mjpg
+
+    sleep 5
+done

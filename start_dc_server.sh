@@ -18,9 +18,9 @@ while true; do
         pip install .
     fi
 
-    echo ----- dcmtr server
+    echo "----- START dcmtr server"
     python3 -m dcmtr server -p $PORT $PINS
-    echo -----
+    echo "----- END   dcmtr server"
 
-    sleep 2
+    sleep 5
 done

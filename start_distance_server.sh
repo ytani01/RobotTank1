@@ -17,9 +17,9 @@ while true; do
         pip install .
     fi
 
-    echo ----- distancevl53l0x server
+    echo "----- START distancevl53l0x server"
     python3 -m distancevl53l0x server -p $PORT
-    echo -----
+    echo "----- END   distancevl53l0x server"
 
-    sleep 2
+    sleep 5
 done

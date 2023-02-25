@@ -94,6 +94,8 @@ class CmdHandler(socketserver.StreamRequestHandler):
 class CmdServer(socketserver.ThreadingTCPServer):
     """ TCP server """
 
+    allow_reuse_address = True
+
     DEF_PORT = 54321
 
     def __init__(self, port=DEF_PORT, debug=False):
