@@ -32,7 +32,7 @@ class SensorWatcher(threading.Thread):
     DEF_DISTANCE_NEAR = 120
     DISTANCE_TOO_NEAR = 50
     DISTANCE_FAR = 600
-    DISTANCE_MAX = 8190
+    DISTANCE_MAX = 8190.0
 
     def __init__(self, dc_mtr, base_speed, distance_client, debug=False):
         """
@@ -92,7 +92,7 @@ class SensorWatcher(threading.Thread):
             speed = self._base_speed
 
             distance = self._d_clnt.get_distance()
-            self.__log.debug('distance=%s', distance)
+            self.__log.info('distance=%s', distance)
 
             if distance is None:
                 self._dc_mtr.call('CLEAR')
@@ -104,6 +104,10 @@ class SensorWatcher(threading.Thread):
                 self._dc_mtr.call('CLEAR')
                 self._dc_mtr.call('STOP')
                 time.sleep(0.5)
+                continue
+
+            if distance >= self.DISTANCE_MAX:
+                time.sleep(0.1)
                 continue
 
             if self._distance_near < distance <= self._distance_near * 1.1:
