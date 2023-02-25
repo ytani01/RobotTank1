@@ -107,6 +107,7 @@ class Test_RobotTank:
 
             d_speed = [self.CALIB_STEP, -self.CALIB_STEP]
 
+        """
         if [evtype, code] == Bt8BitDoZero2.BTN['LR'] and val_str == 'HIGH':
 
             self._base_speed[0] = self.speed_add1(self._base_speed[0],
@@ -123,6 +124,7 @@ class Test_RobotTank:
                                                   -self.CALIB_STEP)
 
             d_speed = [-self.CALIB_STEP, -self.CALIB_STEP]
+        """
 
         # move
         self.speed_add(d_speed)

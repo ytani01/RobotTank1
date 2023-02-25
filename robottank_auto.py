@@ -267,35 +267,53 @@ class RobotTankAuto:
         self.__log.info('%d:%s(%d):%s(%d):%s(%d)',
                         dev, evtype_str, evtype, code_str, code, val_str, val)
 
-        if val_str == 'RELEASE':
+        if val_str in ['RELEASE', 'MIDDLE']:
             return
 
-        # val_str != 'RELEASE': ###
+        if not self.is_auto():
+            if Bt8BitDoZero2.pushed('SEL', evtype, code, val):
+                self._dc_mtr.call('CLEAR')
+                self._dc_mtr.call('SPEED 0 0')
+                self.auto_on()
+            return
 
-        if Bt8BitDoZero2.pushed('TL', evtype, code, val) and self.is_auto():
+        # AUTO ON
+
+        
+        if Bt8BitDoZero2.pushed('A', evtype, code, val):
+            self.auto_off()
+            return
+
+        if Bt8BitDoZero2.pushed('B', evtype, code, val):
+            self.auto_off()
+            return
+
+        if Bt8BitDoZero2.pushed('X', evtype, code, val):
+            self.auto_off()
+            return
+
+        if Bt8BitDoZero2.pushed('Y', evtype, code, val):
+            self.auto_off()
+            return
+
+        if Bt8BitDoZero2.pushed('SEL', evtype, code, val):
+            self.auto_off()
+            return
+
+        if Bt8BitDoZero2.pushed('LR', evtype, code, val) and val_str == 'HIGH':
             self._watcher._distance_near = max(
                 self._watcher._distance_near - 5,
                 self._watcher.DEF_DISTANCE_NEAR - 5 * 5)
             self.__log.info('distance_near=%s', self._watcher._distance_near)
             return
 
-        if Bt8BitDoZero2.pushed('TR', evtype, code, val) and self.is_auto():
+        if Bt8BitDoZero2.pushed('LR', evtype, code, val) and val_str == 'LOW':
             self._watcher._distance_near = min(
                 self._watcher._distance_near + 5,
                 self._watcher.DEF_DISTANCE_NEAR + 5 * 5)
             self.__log.info('distance_near=%s', self._watcher._distance_near)
             return
 
-        if self.is_auto():
-            self.auto_off()
-            return
-
-        # AUTO: OFF
-
-        if Bt8BitDoZero2.pushed('SEL', evtype, code, val):
-            self._dc_mtr.call('CLEAR')
-            self._dc_mtr.call('SPEED 0 0')
-            self.auto_on()
 
     def is_auto(self):
         return self._auto

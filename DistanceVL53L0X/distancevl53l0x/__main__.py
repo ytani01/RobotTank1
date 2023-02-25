@@ -3,7 +3,7 @@
 #
 import click
 from . import __prog_name__, __version__, __author__
-from . import get_logger, distance, server, robottankauto
+from . import get_logger, distance, server
 
 
 @click.group(invoke_without_command=True,

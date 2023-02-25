@@ -44,8 +44,6 @@ class Bt8BitDoZero2N:
                     self.__log.debug('connect: %s', d)
 
             self._bt8bitdozero2.append(b)
-
-        for b in self._bt8bitdozero2:
             b.start()
 
 
