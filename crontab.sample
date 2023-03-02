@@ -22,7 +22,7 @@
 # 
 # m h  dom mon dow   command
 @reboot		sudo pigpiod -l -m -a 1
-@reboot		$HOME/bin/slack-ipaddr.sh > $HOME/tmp/slack-ipaddr.log 2>&1 &
+@reboot		$HOME/bin/slack-ipaddr.sh -H -p 8080 -u '?action=stream' > $HOME/tmp/slack-ipaddr.log 2>&1 &
 @reboot		sleep 10; $HOME/bin/boot.sh > $HOME/tmp/boot.log 2>&1 &
 @reboot		sleep 5; pkill rsync; sleep 2; rsync -av --remove-source-files /home/pi/tmp/pics ytani@ssh.ytani.net:/common/tmp &
 
