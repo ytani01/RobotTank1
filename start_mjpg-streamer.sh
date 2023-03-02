@@ -10,8 +10,16 @@ DELAY=2000
 
 WIDTH=1920
 HEIGHT=1080
-FPS=20
+#WIDTH=1280
+#HEIGHT=720
+
+FPS=30
+#FPS=60
+
 ROT=180
+
+#VS=
+VS=-vs
 
 . $BINDIR/activate
 
@@ -22,7 +30,7 @@ while true; do
     waitbtn.py TR
 
     echo ----- mjpg_streamer
-    ./mjpg_streamer -o "./output_http.so -w ./www -p $PORT" -o "output_file.so -f $HOME/tmp/pics -d $DELAY" -i "./input_raspicam.so -x $WIDTH -y $HEIGHT -fps $FPS -q 10 -rot $ROT" &
+    ./mjpg_streamer -o "./output_http.so -w ./www -p $PORT" -o "output_file.so -f $HOME/tmp/pics -d $DELAY" -i "./input_raspicam.so -x $WIDTH -y $HEIGHT -fps $FPS -q 10 -rot $ROT $VS" &
     PID=$!
 
     waitbtn.py TL

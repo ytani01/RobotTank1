@@ -167,7 +167,12 @@ class SensorWatcher(threading.Thread):
                 self._dc_mtr.set_delay(delay3)
                 self.__log.info('delay3=%s', delay3)
 
-                time.sleep(delay1 + delay2 + delay3)
+                self._dc_mtr.set_stop()
+
+                delay4 = 0.5
+                self._dc_mtr.set_delay(delay4)
+
+                time.sleep(delay1 + delay2 + delay3 + delay4)
 
             near_count = 0
             time.sleep(0.001)

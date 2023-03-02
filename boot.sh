@@ -6,6 +6,8 @@ VENVDIR=$HOME/env2-robottank
 BINDIR=$VENVDIR/bin
 ROBOTDIR=$VENVDIR/RobotTank1
 
+. $BINDIR/activate
+echo "$0: VIRTUAL_ENV=$VIRTUAL_ENV"
 
 while true; do
     $ROBOTDIR/start_mjpg-streamer.sh &
@@ -20,7 +22,7 @@ while true; do
     $ROBOTDIR/start_auto.sh &
 
     while true; do
-	waitbtn.py TL
+	$BINDIR/waitbtn.py ST
 	if [ $? -eq 0 ]; then
 	    break
 	fi
