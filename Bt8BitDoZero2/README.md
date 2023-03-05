@@ -4,6 +4,14 @@ Bluetooth gamepad
 
 ## Setup
 
+### Install
+
+``` shell
+pip install -U evdev click
+pip install .
+```
+
+
 ### 8BitDo zero 2
 
 Power on: [B]+[start]
@@ -25,9 +33,10 @@ $ sudo bluetoothctl
 ### Test
 
 ``` shell
-$ ls /dev/input/js0
+$ ls /dev/input
 (check a number of device file)
 
+$ sudo apt install evtest
 $ sudo evtest
 :
 ... (BTN_NORTH) ...
@@ -51,16 +60,15 @@ event at 1676375760.197109, code 00, type 00, val 00
 event at 1676375760.375814, code 04, type 04, val 589828
 event at 1676375760.375814, code 307, type 01, val 00
 event at 1676375760.375814, code 00, type 00, val 00
-event at 1676375760.738340, code 04, type 04, val 589828
-event at 1676375760.738340, code 307, type 01, val 01
-event at 1676375760.738340, code 00, type 00, val 00
-event at 1676375760.858367, code 04, type 04, val 589828
-event at 1676375760.858367, code 307, type 01, val 00
-event at 1676375760.858367, code 00, type 00, val 00
 :
 [Ctrl]-C
 ```
 
+### 
+
+``` shell
+python3 -m bt8bitdozero2 robottank 0
+```
 
 ## Software Architecture
 
