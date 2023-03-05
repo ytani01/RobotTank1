@@ -64,7 +64,23 @@ event at 1676375760.375814, code 00, type 00, val 00
 [Ctrl]-C
 ```
 
-### 
+
+###
+
+/etc/systemd/system/bluetooth.service.d/override.conf
+``` text
+:
+ExecStart=/usr/libexec/bluetooth/bluetoothd --compat --noplugin=sap
+ExecStartPost=/usr/bin/sdptool add SP
+:
+```
+
+``` shell
+sudo systemctl daemon-reload
+sudo systemctl restart bluetooth.service
+```
+
+##
 
 ``` shell
 python3 -m bt8bitdozero2 robottank 0
