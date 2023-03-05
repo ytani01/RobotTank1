@@ -10,6 +10,15 @@ cd mjpg-streamer/mjpg-streamer-experimental
 make
 ```
 
+## camera test
+
+``` sh
+vcgencmd get_camera
+:
+raspistill -n -o pi-camera.jpg
+:
+```
+
 ## Usage
 
 Web Server

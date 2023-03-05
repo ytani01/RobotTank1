@@ -86,6 +86,17 @@ sudo systemctl restart bluetooth.service
 python3 -m bt8bitdozero2 robottank 0
 ```
 
+## Trouble Shooting
+
+###
+
+???
+``` shell
+sudo hciconfig hci0 down
+sudo hciconfig hci0 up
+sudo /etc/init.d/bluetooth restart
+```
+
 ## Software Architecture
 
 ``` text
