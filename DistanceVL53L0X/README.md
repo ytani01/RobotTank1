@@ -4,6 +4,12 @@ VL53L0X: TOF Distance Sensor
 
 ## Install
 
+###
+
+``` shell
+sudo apt install i2c-tools
+```
+
 ### Gadgetoid/VL53L0X-python.git
 
 ``` shell
@@ -31,9 +37,21 @@ patch -b < VL53L0X_example.py-patch
 ### Python Package
 
 ``` shell
+pip install -U smbus2 click
 pip install .
 ```
 
+### sample
+
+``` shell
+python3 -m distancevl53l0x distance
+```
+
+## server
+
+``` shell
+python3 -m distancevl53l0x server
+```
 
 ## Software Architecture
 
