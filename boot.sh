@@ -10,7 +10,7 @@ ROBOTDIR=$VENVDIR/RobotTank1
 echo "$0: VIRTUAL_ENV=$VIRTUAL_ENV"
 
 while true; do
-    $ROBOTDIR/start_mjpg-streamer.sh &
+#    $ROBOTDIR/start_mjpg-streamer.sh &
 
     $ROBOTDIR/start_dc_server.sh &
     $ROBOTDIR/start_distance_server.sh &

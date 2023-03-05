@@ -1,6 +1,6 @@
 #!/bin/sh
 
-VENVDIR=$HOME/env2-robottank
+VENVDIR=$HOME/env1-robot
 BINDIR=$VENVDIR/bin
 TOPDIR=$VENVDIR/RobotTank1
 WORKDIR=$TOPDIR/Bt8BitDoZero2
