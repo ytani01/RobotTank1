@@ -2,7 +2,7 @@
 
 #sudo swapoff -a
 
-VENVDIR=$HOME/env2-robottank
+VENVDIR=$HOME/env1-robot
 BINDIR=$VENVDIR/bin
 ROBOTDIR=$VENVDIR/RobotTank1
 
@@ -10,7 +10,7 @@ ROBOTDIR=$VENVDIR/RobotTank1
 echo "$0: VIRTUAL_ENV=$VIRTUAL_ENV"
 
 while true; do
-#    $ROBOTDIR/start_mjpg-streamer.sh &
+    $ROBOTDIR/start_mjpg-streamer.sh &
 
     $ROBOTDIR/start_dc_server.sh &
     $ROBOTDIR/start_distance_server.sh &
